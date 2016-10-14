@@ -945,15 +945,6 @@ static struct machine_desc * __init setup_machine_tags(unsigned int nr)
 
 	/* parse_early_param needs a boot_command_line */
 	strlcpy(boot_command_line, from, COMMAND_LINE_SIZE);
-
-#ifdef CONFIG_ARM_INSERT_DTB
-#ifdef CONFIG_MACH_SAGA
-	setup_safe_machine_fdt(arch_arm_boot_dts_saga_dtb);
-#endif
-#ifdef CONFIG_MACH_SPADE
-	setup_safe_machine_fdt(arch_arm_boot_dts_spade_dtb);
-#endif
-#endif
 	return mdesc;
 }
 
@@ -972,6 +963,16 @@ void __init setup_arch(char **cmdline_p)
 
 	setup_processor();
 	mdesc = setup_machine_fdt(__atags_pointer);
+#ifdef CONFIG_ARM_INSERT_DTB
+#ifdef CONFIG_MACH_SAGA
+	if (!mdesc)
+		mdesc = setup_machine_fdt(virt_to_phys(arch_arm_boot_dts_saga_dtb));
+#endif
+#ifdef CONFIG_MACH_SPADE
+	if (!mdesc)
+		mdesc = setup_machine_fdt(virt_to_phys(arch_arm_boot_dts_spade_dtb));
+#endif
+#endif
 	if (!mdesc)
 		mdesc = setup_machine_tags(machine_arch_type);
 	machine_desc = mdesc;
