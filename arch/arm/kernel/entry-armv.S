@@ -344,7 +344,7 @@ ENDPROC(__pabt_svc)
 	@
 	@ Enable the alignment trap while in kernel mode
 	@
-	alignment_trap r0
+	alignment_trap r0, .LCcralign
 
 	@
 	@ Clear FP to mark the first stack frame
@@ -1143,10 +1143,7 @@ __vectors_start:
 	.data
 
 	.globl	cr_alignment
-	.globl	cr_no_alignment
 cr_alignment:
-	.space	4
-cr_no_alignment:
 	.space	4
 
 #ifdef CONFIG_MULTI_IRQ_HANDLER
