@@ -21,6 +21,12 @@ git checkout HEAD -- lib/lzo/lzo1x_decompress_safe.c
 # drop usage of MFD_PM8XXX_IRQ - bc866fc7a8c4322de40b694ffcfcdda50ab82f35
 # drop alternative version of drivers/i2c/busses/i2c-qup.c - 39de65aa2c3eee901db020a4f1396998e09602a3
 # init/main.c - initcall issues?
+# arch/arm/include/asm/memblock.h - issue with meminfo
+# arch/arm/include/asm/setup.h - issue with meminfo
+# arch/arm/kernel/devtree.c - issue with meminfo
+# arch/arm/kernel/setup.c - issue with meminfo
+# arch/arm/mm/init.c - issue with meminfo
+# arch/arm/mm/mmu.c - issue with meminfo
 
 #!/bin/sh
 LIST=`git diff v3.15 --name-only | grep -v "\.h" | grep -v "Makefile" | grep -v "Kconfig" | sed 's|\.c|\.o|g'`
