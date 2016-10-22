@@ -240,7 +240,7 @@ setup_machine_tags(phys_addr_t __atags_pointer, unsigned int machine_nr)
 		mdesc->fixup(tags, &from);
 
 	if (tags->hdr.tag == ATAG_CORE) {
-		if (meminfo.nr_banks != 0)
+		if (memblock_phys_mem_size())
 			squash_mem_tags(tags);
 		save_atags(tags);
 		parse_tags(tags);
