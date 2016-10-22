@@ -89,4 +89,9 @@ unsigned long acpuclk_wait_for_irq(void);
  */
 void acpuclk_register(struct acpuclk_data *data);
 
+/*
+ * get cpu cpufreq_frequency_table
+ */
+struct cpufreq_frequency_table * get_cpufreq_table(void);
+
 #endif

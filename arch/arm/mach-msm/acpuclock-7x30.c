@@ -433,10 +433,9 @@ static void lpj_init(void)
 	}
 }
 
-#ifdef CONFIG_CPU_FREQ_MSM
 static struct cpufreq_frequency_table cpufreq_tbl[ARRAY_SIZE(acpu_freq_tbl)];
 
-static void setup_cpufreq_table(void)
+struct cpufreq_frequency_table * get_cpufreq_table(void)
 {
 	unsigned i = 0;
 	const struct clkctl_acpu_speed *speed;
@@ -449,11 +448,8 @@ static void setup_cpufreq_table(void)
 		}
 	cpufreq_tbl[i].frequency = CPUFREQ_TABLE_END;
 
-	cpufreq_frequency_table_get_attr(cpufreq_tbl, smp_processor_id());
+	return cpufreq_tbl;
 }
-#else
-static inline void setup_cpufreq_table(void) { }
-#endif
 
 /*
  * Truncate the frequency table at the current PLL2 rate and determine the
@@ -527,7 +523,6 @@ static int acpuclk_7x30_probe(struct platform_device *pdev)
 	populate_plls();
 	acpuclk_hw_init();
 	lpj_init();
-	setup_cpufreq_table();
 	acpuclk_register(&acpuclk_7x30_data);
 
 	return 0;

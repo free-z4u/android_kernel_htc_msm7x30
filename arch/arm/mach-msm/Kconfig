@@ -632,7 +632,7 @@ config MSM_DALRPC
 config CPU_FREQ_MSM
 	bool
 	depends on CPU_FREQ && ARCH_MSM
-	default n
+	default y
 	help
 	  This enables the CPUFreq driver for Qualcomm CPUs.
 	  If in doubt, say Y.
