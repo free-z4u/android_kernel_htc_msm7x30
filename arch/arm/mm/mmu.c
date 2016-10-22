@@ -1106,8 +1106,8 @@ void __init sanity_check_meminfo(void)
 		 * the vmalloc area greatly simplifying things later.
 		 */
 		if (!highmem && bank->size > size_limit) {
-			if (meminfo.nr_banks >= NR_BANKS) {
-				printk(KERN_CRIT "NR_BANKS too low, "
+			if (meminfo.nr_banks >= 16) {
+				printk(KERN_CRIT "Number banks too low, "
 						 "ignoring high memory\n");
 			} else {
 				memmove(bank + 1, bank,

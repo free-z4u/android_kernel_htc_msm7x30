@@ -642,8 +642,8 @@ int __init arm_add_memory(u64 start, u64 size)
 	struct membank *bank = &meminfo.bank[meminfo.nr_banks];
 	u64 aligned_start;
 
-	if (meminfo.nr_banks >= NR_BANKS) {
-		pr_crit("NR_BANKS too low, ignoring memory at 0x%08llx\n",
+	if (meminfo.nr_banks >= 16) {
+		pr_crit("Number banks too low, ignoring memory at 0x%08llx\n",
 			(long long)start);
 		return -EINVAL;
 	}

@@ -24,8 +24,6 @@ static const struct tagtable __tagtable_##fn __tag = { tag, fn }
 /*
  * Memory map description
  */
-#define NR_BANKS	CONFIG_ARM_NR_BANKS
-
 struct membank {
 	phys_addr_t start;
 	phys_addr_t size;
@@ -34,7 +32,7 @@ struct membank {
 
 struct meminfo {
 	int nr_banks;
-	struct membank bank[NR_BANKS];
+	struct membank bank[16];
 };
 
 extern struct meminfo meminfo;
