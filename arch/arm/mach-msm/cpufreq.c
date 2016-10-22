@@ -107,10 +107,10 @@ static int set_cpu_freq(struct cpufreq_policy *policy, unsigned int new_freq)
 		sched_setscheduler_nocheck(current, SCHED_FIFO, &param);
 	}
 
-	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+	cpufreq_freq_transition_begin(policy, &freqs);
 	ret = acpuclk_set_rate(policy->cpu, freqs.new, SETRATE_CPUFREQ);
 	if (!ret)
-		cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+		cpufreq_freq_transition_end(policy, &freqs, ret);
 
 	/* Restore priority after clock ramp-up */
 	if (freqs.new > freqs.old && saved_sched_policy >= 0) {
@@ -285,12 +285,22 @@ static int __cpuinit msm_cpufreq_init(struct cpufreq_policy *policy)
 {
 	int cur_freq;
 	int index;
+	int ret = 0;
 	struct cpufreq_frequency_table *table;
 #ifdef CONFIG_SMP
 	struct cpufreq_work_struct *cpu_work = NULL;
 #endif
 
-	table = cpufreq_frequency_get_table(policy->cpu);
+	table = get_cpufreq_table();
+
+	ret = cpufreq_table_validate_and_show(policy, table);
+	if (ret) {
+		pr_info("cpufreq: CPU %d invalid freq table\n",
+				policy->cpu);
+		return ret;
+	}
+
+
 	if (cpufreq_frequency_table_cpuinfo(policy, table)) {
 #ifdef CONFIG_MSM_CPU_FREQ_SET_MIN_MAX
 		policy->cpuinfo.min_freq = CONFIG_MSM_CPU_FREQ_MIN;
