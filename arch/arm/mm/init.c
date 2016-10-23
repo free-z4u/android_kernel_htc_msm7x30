@@ -76,8 +76,10 @@ __tagtable(ATAG_INITRD2, parse_tag_initrd2);
 #ifdef CONFIG_OF_FLATTREE
 void __init early_init_dt_setup_initrd_arch(unsigned long start, unsigned long end)
 {
-	phys_initrd_start = start;
-	phys_initrd_size = end - start;
+	pr_info("must be initrd_start=0x%lx  initrd_end=0x%lx\n", phys_initrd_start, phys_initrd_start + phys_initrd_size);
+	// must comment out next call to have Desire S booting
+	//phys_initrd_start = start;
+	//phys_initrd_size = end - start;
 }
 #endif /* CONFIG_OF_FLATTREE */
 

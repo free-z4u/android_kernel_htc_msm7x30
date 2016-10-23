@@ -568,9 +568,8 @@ void __init early_init_dt_check_for_initrd(unsigned long node)
 	if (!prop)
 		return;
 	end = of_read_ulong(prop, len/4);
-// must comment out next call to have Desire S booting
-//	early_init_dt_setup_initrd_arch(start, end);
-	pr_debug("initrd_start=0x%lx  initrd_end=0x%lx\n", start, end);
+	early_init_dt_setup_initrd_arch(start, end);
+	pr_info("initrd_start=0x%lx  initrd_end=0x%lx\n", start, end);
 }
 #else
 inline void early_init_dt_check_for_initrd(unsigned long node)
