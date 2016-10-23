@@ -11,44 +11,15 @@ menuconfig INPUT_TOUCHSCREEN
 
 if INPUT_TOUCHSCREEN
 
-config TOUCHSCREEN_ATMEL_DETECT_CABLE
-	bool "Touchscreen ATMEL_DETECT_CABLE support"
-	default n
-	help
-		This enables support for cable detection in touchscreen driver
-
-config TOUCHSCREEN_ATMEL_DETECT_USB
-	bool "Touchscreen ATMEL_DETECT_USB support"
-	default n
-	help
-		This enables support for cable detection in touchscreen driver
-
-config TOUCHSCREEN_ATMEL_DETECT_USB_VBUS
-	bool "Touchscreen ATMEL_DETECT_USB_VBUS support"
-	default n
-	help
-		This enables support for cable detection in touchscreen driver
-
-config TOUCHSCREEN_ATMEL_WLS
-	bool "Touchscreen ATMEL_WLS support"
-	default n
-	help
-		This enables support for WLS in touchscreen driver
-
-config TOUCHSCREEN_ATMEL
-	tristate "Atmel i2c touchscreen"
-	depends on I2C
-	help
-	  This enables support for Atmel over I2C based touchscreens.
-
-config TOUCHSCREEN_ATMEL_SWEEP2WAKE
-	bool "Sweep2Wake for Atmel based touchscreens"
-	depends on TOUCHSCREEN_ATMEL
-	default n
-
 config OF_TOUCHSCREEN
 	def_tristate INPUT
 	depends on INPUT && OF
+
+config TOUCHSCREEN_COMPATIBLE_REPORT
+	bool "Touchscreen compatible repodepends on I2C"
+	default n
+	help
+	  This enables support for old report style in touchscreen driver
 
 config TOUCHSCREEN_88PM860X
 	tristate "Marvell 88PM860x touchscreen"
@@ -95,16 +66,6 @@ config TOUCHSCREEN_AD7877
 	  module will be called ad7877.
 
 config TOUCHSCREEN_AD7879
-	tristate
-	default n
-
-config TOUCHSCREEN_COMPATIBLE_REPORT
-		bool "Touchscreen compatible repodepends on I2C"
-		default n
-		help
-		This enables support for old report style in touchscreen driver
-
-config TOUCHSCREEN_AD7879
 	tristate "Analog Devices AD7879-1/AD7889-1 touchscreen interface"
 	help
 	  Say Y here if you want to support a touchscreen interface using
@@ -134,6 +95,17 @@ config TOUCHSCREEN_AD7879_SPI
 
 	  To compile this driver as a module, choose M here: the
 	  module will be called ad7879-spi.
+
+config TOUCHSCREEN_ATMEL
+	tristate "Atmel i2c touchscreen"
+	depends on I2C
+	help
+	  This enables support for Atmel over I2C based touchscreens.
+
+config TOUCHSCREEN_ATMEL_SWEEP2WAKE
+	bool "Sweep2Wake for Atmel based touchscreens"
+	depends on TOUCHSCREEN_ATMEL
+	default n
 
 config TOUCHSCREEN_ATMEL_MXT
 	tristate "Atmel mXT I2C Touchscreen"
@@ -569,12 +541,6 @@ config TOUCHSCREEN_MIGOR
 
 	  To compile this driver as a module, choose M here: the
 	  module will be called migor_ts.
-
-config TOUCHSCREEN_SYNAPTICS_I2C_RMI
-	tristate "Synaptics i2c touchscreen"
-	depends on I2C
-	help
-	  This enables support for Synaptics RMI over I2C based touchscreens.
 
 config TOUCHSCREEN_SYNAPTICS_3K
 	tristate "Synaptics 3k serious i2c touchscreen"
