@@ -1297,7 +1297,7 @@ int sdio_reset_comm(struct mmc_card *card)
 	 */
 	err = sdio_enable_hs(card);
 	if (err > 0)
-		mmc_sd_go_highspeed(card);
+		mmc_set_timing(card->host, MMC_TIMING_SD_HS);
 	else if (err)
 		goto err;
 
