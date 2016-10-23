@@ -730,6 +730,10 @@ static void avc_audit_post_callback(struct audit_buffer *ab, void *a)
 	avc_dump_query(ab, ad->selinux_audit_data->ssid,
 			   ad->selinux_audit_data->tsid,
 			   ad->selinux_audit_data->tclass);
+	if (ad->selinux_audit_data->denied) {
+		audit_log_format(ab, " permissive=%u",
+				 ad->selinux_audit_data->result ? 0 : 1);
+	}
 }
 
 /* This is the slow part of avc audit with big stack footprint */
