@@ -196,10 +196,7 @@ static signed int pid_calc(struct _pid *pid, int32_t busy)
 	pid->last_err = fp_error;
 
 	result = pterm + mul_fp(pid->integral, pid->i_gain) + dterm;
-	if (result >= 0)
-		result = result + (1 << (FRAC_BITS-1));
-	else
-		result = result - (1 << (FRAC_BITS-1));
+	result = result + (1 << (FRAC_BITS-1));
 	return (signed int)fp_toint(result);
 }
 
@@ -691,13 +688,7 @@ MODULE_DEVICE_TABLE(x86cpu, intel_pstate_cpu_ids);
 
 static int intel_pstate_init_cpu(unsigned int cpunum)
 {
-
-	const struct x86_cpu_id *id;
 	struct cpudata *cpu;
-
-	id = x86_match_cpu(intel_pstate_cpu_ids);
-	if (!id)
-		return -ENODEV;
 
 	all_cpu_data[cpunum] = kzalloc(sizeof(struct cpudata), GFP_KERNEL);
 	if (!all_cpu_data[cpunum])

@@ -693,7 +693,7 @@ retry:
 		ret = btrfs_reserve_extent(root,
 					   async_extent->compressed_size,
 					   async_extent->compressed_size,
-					   0, alloc_hint, &ins, 1);
+					   0, alloc_hint, &ins, 1, 1);
 		if (ret) {
 			int i;
 
@@ -794,7 +794,7 @@ retry:
 out:
 	return ret;
 out_free_reserve:
-	btrfs_free_reserved_extent(root, ins.objectid, ins.offset);
+	btrfs_free_reserved_extent(root, ins.objectid, ins.offset, 1);
 out_free:
 	extent_clear_unlock_delalloc(inode, async_extent->start,
 				     async_extent->start +
@@ -917,7 +917,7 @@ static noinline int cow_file_range(struct inode *inode,
 		cur_alloc_size = disk_num_bytes;
 		ret = btrfs_reserve_extent(root, cur_alloc_size,
 					   root->sectorsize, 0, alloc_hint,
-					   &ins, 1);
+					   &ins, 1, 1);
 		if (ret < 0)
 			goto out_unlock;
 
@@ -995,7 +995,7 @@ out:
 	return ret;
 
 out_reserve:
-	btrfs_free_reserved_extent(root, ins.objectid, ins.offset);
+	btrfs_free_reserved_extent(root, ins.objectid, ins.offset, 1);
 out_unlock:
 	extent_clear_unlock_delalloc(inode, start, end, locked_page,
 				     EXTENT_LOCKED | EXTENT_DO_ACCOUNTING |
@@ -2599,6 +2599,21 @@ out_kfree:
 	return NULL;
 }
 
+static void btrfs_release_delalloc_bytes(struct btrfs_root *root,
+					 u64 start, u64 len)
+{
+	struct btrfs_block_group_cache *cache;
+
+	cache = btrfs_lookup_block_group(root->fs_info, start);
+	ASSERT(cache);
+
+	spin_lock(&cache->lock);
+	cache->delalloc_bytes -= len;
+	spin_unlock(&cache->lock);
+
+	btrfs_put_block_group(cache);
+}
+
 /* as ordered data IO finishes, this gets called so we can finish
  * an ordered extent if the range of bytes in the file it covers are
  * fully written.
@@ -2698,6 +2713,10 @@ static int btrfs_finish_ordered_io(struct btrfs_ordered_extent *ordered_extent)
 						logical_len, logical_len,
 						compress_type, 0, 0,
 						BTRFS_FILE_EXTENT_REG);
+		if (!ret)
+			btrfs_release_delalloc_bytes(root,
+						     ordered_extent->start,
+						     ordered_extent->disk_len);
 	}
 	unpin_extent_cache(&BTRFS_I(inode)->extent_tree,
 			   ordered_extent->file_offset, ordered_extent->len,
@@ -2750,7 +2769,7 @@ out:
 		    !test_bit(BTRFS_ORDERED_NOCOW, &ordered_extent->flags) &&
 		    !test_bit(BTRFS_ORDERED_PREALLOC, &ordered_extent->flags))
 			btrfs_free_reserved_extent(root, ordered_extent->start,
-						   ordered_extent->disk_len);
+						   ordered_extent->disk_len, 1);
 	}
 
 
@@ -6535,21 +6554,21 @@ static struct extent_map *btrfs_new_extent_direct(struct inode *inode,
 
 	alloc_hint = get_extent_allocation_hint(inode, start, len);
 	ret = btrfs_reserve_extent(root, len, root->sectorsize, 0,
-				   alloc_hint, &ins, 1);
+				   alloc_hint, &ins, 1, 1);
 	if (ret)
 		return ERR_PTR(ret);
 
 	em = create_pinned_em(inode, start, ins.offset, start, ins.objectid,
 			      ins.offset, ins.offset, ins.offset, 0);
 	if (IS_ERR(em)) {
-		btrfs_free_reserved_extent(root, ins.objectid, ins.offset);
+		btrfs_free_reserved_extent(root, ins.objectid, ins.offset, 1);
 		return em;
 	}
 
 	ret = btrfs_add_ordered_extent_dio(inode, start, ins.objectid,
 					   ins.offset, ins.offset, 0);
 	if (ret) {
-		btrfs_free_reserved_extent(root, ins.objectid, ins.offset);
+		btrfs_free_reserved_extent(root, ins.objectid, ins.offset, 1);
 		free_extent_map(em);
 		return ERR_PTR(ret);
 	}
@@ -7437,7 +7456,7 @@ free_ordered:
 		if (!test_bit(BTRFS_ORDERED_PREALLOC, &ordered->flags) &&
 		    !test_bit(BTRFS_ORDERED_NOCOW, &ordered->flags))
 			btrfs_free_reserved_extent(root, ordered->start,
-						   ordered->disk_len);
+						   ordered->disk_len, 1);
 		btrfs_put_ordered_extent(ordered);
 		btrfs_put_ordered_extent(ordered);
 	}
@@ -7445,39 +7464,30 @@ free_ordered:
 }
 
 static ssize_t check_direct_IO(struct btrfs_root *root, int rw, struct kiocb *iocb,
-			const struct iovec *iov, loff_t offset,
-			unsigned long nr_segs)
+			const struct iov_iter *iter, loff_t offset)
 {
 	int seg;
 	int i;
-	size_t size;
-	unsigned long addr;
 	unsigned blocksize_mask = root->sectorsize - 1;
 	ssize_t retval = -EINVAL;
-	loff_t end = offset;
 
 	if (offset & blocksize_mask)
 		goto out;
 
-	/* Check the memory alignment.  Blocks cannot straddle pages */
-	for (seg = 0; seg < nr_segs; seg++) {
-		addr = (unsigned long)iov[seg].iov_base;
-		size = iov[seg].iov_len;
-		end += size;
-		if ((addr & blocksize_mask) || (size & blocksize_mask))
-			goto out;
+	if (iov_iter_alignment(iter) & blocksize_mask)
+		goto out;
 
-		/* If this is a write we don't need to check anymore */
-		if (rw & WRITE)
-			continue;
-
-		/*
-		 * Check to make sure we don't have duplicate iov_base's in this
-		 * iovec, if so return EINVAL, otherwise we'll get csum errors
-		 * when reading back.
-		 */
-		for (i = seg + 1; i < nr_segs; i++) {
-			if (iov[seg].iov_base == iov[i].iov_base)
+	/* If this is a write we don't need to check anymore */
+	if (rw & WRITE)
+		return 0;
+	/*
+	 * Check to make sure we don't have duplicate iov_base's in this
+	 * iovec, if so return EINVAL, otherwise we'll get csum errors
+	 * when reading back.
+	 */
+	for (seg = 0; seg < iter->nr_segs; seg++) {
+		for (i = seg + 1; i < iter->nr_segs; i++) {
+			if (iter->iov[seg].iov_base == iter->iov[i].iov_base)
 				goto out;
 		}
 	}
@@ -7487,8 +7497,7 @@ out:
 }
 
 static ssize_t btrfs_direct_IO(int rw, struct kiocb *iocb,
-			const struct iovec *iov, loff_t offset,
-			unsigned long nr_segs)
+			struct iov_iter *iter, loff_t offset)
 {
 	struct file *file = iocb->ki_filp;
 	struct inode *inode = file->f_mapping->host;
@@ -7498,8 +7507,7 @@ static ssize_t btrfs_direct_IO(int rw, struct kiocb *iocb,
 	bool relock = false;
 	ssize_t ret;
 
-	if (check_direct_IO(BTRFS_I(inode)->root, rw, iocb, iov,
-			    offset, nr_segs))
+	if (check_direct_IO(BTRFS_I(inode)->root, rw, iocb, iter, offset))
 		return 0;
 
 	atomic_inc(&inode->i_dio_count);
@@ -7511,7 +7519,7 @@ static ssize_t btrfs_direct_IO(int rw, struct kiocb *iocb,
 	 * we need to flush the dirty pages again to make absolutely sure
 	 * that any outstanding dirty pages are on disk.
 	 */
-	count = iov_length(iov, nr_segs);
+	count = iov_iter_count(iter);
 	if (test_bit(BTRFS_INODE_HAS_ASYNC_EXTENT,
 		     &BTRFS_I(inode)->runtime_flags))
 		filemap_fdatawrite_range(inode->i_mapping, offset, count);
@@ -7538,7 +7546,7 @@ static ssize_t btrfs_direct_IO(int rw, struct kiocb *iocb,
 
 	ret = __blockdev_direct_IO(rw, iocb, inode,
 			BTRFS_I(inode)->root->fs_info->fs_devices->latest_bdev,
-			iov, offset, nr_segs, btrfs_get_blocks_direct, NULL,
+			iter, offset, btrfs_get_blocks_direct, NULL,
 			btrfs_submit_direct, flags);
 	if (rw & WRITE) {
 		if (ret < 0 && ret != -EIOCBQUEUED)
@@ -8819,7 +8827,7 @@ static int __btrfs_prealloc_file_range(struct inode *inode, int mode,
 		cur_bytes = min(num_bytes, 256ULL * 1024 * 1024);
 		cur_bytes = max(cur_bytes, min_size);
 		ret = btrfs_reserve_extent(root, cur_bytes, min_size, 0,
-					   *alloc_hint, &ins, 1);
+					   *alloc_hint, &ins, 1, 0);
 		if (ret) {
 			if (own_trans)
 				btrfs_end_transaction(trans, root);
@@ -8833,7 +8841,7 @@ static int __btrfs_prealloc_file_range(struct inode *inode, int mode,
 						  BTRFS_FILE_EXTENT_PREALLOC);
 		if (ret) {
 			btrfs_free_reserved_extent(root, ins.objectid,
-						   ins.offset);
+						   ins.offset, 0);
 			btrfs_abort_transaction(trans, root, ret);
 			if (own_trans)
 				btrfs_end_transaction(trans, root);
