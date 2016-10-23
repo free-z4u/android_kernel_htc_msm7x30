@@ -59,7 +59,6 @@ static inline void pwm_disable(struct pwm_device *pwm)
 
 struct pwm_chip;
 
-#if !IS_ENABLED(CONFIG_PWM_PMIC8058)
 /**
  * enum pwm_polarity - polarity of a PWM signal
  * @PWM_POLARITY_NORMAL: a high signal for the duration of the duty-
@@ -80,6 +79,7 @@ enum {
 	PWMF_EXPORTED = 1 << 2,
 };
 
+#if !IS_ENABLED(CONFIG_PWM_PMIC8058)
 struct pwm_device {
 	const char		*label;
 	unsigned long		flags;

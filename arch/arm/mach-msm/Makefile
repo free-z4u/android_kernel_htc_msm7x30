@@ -25,7 +25,6 @@ obj-$(CONFIG_MSM_IOMMU) += iommu.o iommu_dev.o iommu_domains.o
 obj-y += memory.o clock-voter.o clock-dummy.o
 obj-y += subsystem_map.o
 obj-$(CONFIG_CPU_FREQ_MSM) += cpufreq.o
-obj-$(CONFIG_DEBUG_FS) += nohlt.o
 obj-$(CONFIG_KEXEC) += msm_kexec.o
 obj-$(CONFIG_FORCE_FAST_CHARGE) += fastchg.o
 
