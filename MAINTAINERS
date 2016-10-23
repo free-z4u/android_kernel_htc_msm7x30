@@ -2384,16 +2384,35 @@ L:	netdev@vger.kernel.org
 S:	Maintained
 F:	drivers/connector/
 
-CONTROL GROUPS (CGROUPS)
+CONTROL GROUP (CGROUP)
 M:	Tejun Heo <tj@kernel.org>
 M:	Li Zefan <lizefan@huawei.com>
-L:	containers@lists.linux-foundation.org
 L:	cgroups@vger.kernel.org
 T:	git git://git.kernel.org/pub/scm/linux/kernel/git/tj/cgroup.git
 S:	Maintained
+F:	Documentation/cgroups/
 F:	include/linux/cgroup*
 F:	kernel/cgroup*
-F:	mm/*cgroup*
+
+CONTROL GROUP - CPUSET
+M:	Li Zefan <lizefan@huawei.com>
+L:	cgroups@vger.kernel.org
+W:	http://www.bullopensource.org/cpuset/
+W:	http://oss.sgi.com/projects/cpusets/
+T:	git git://git.kernel.org/pub/scm/linux/kernel/git/tj/cgroup.git
+S:	Maintained
+F:	Documentation/cgroups/cpusets.txt
+F:	include/linux/cpuset.h
+F:	kernel/cpuset.c
+
+CONTROL GROUP - MEMORY RESOURCE CONTROLLER (MEMCG)
+M:	Johannes Weiner <hannes@cmpxchg.org>
+M:	Michal Hocko <mhocko@suse.cz>
+L:	cgroups@vger.kernel.org
+L:	linux-mm@kvack.org
+S:	Maintained
+F:	mm/memcontrol.c
+F:	mm/page_cgroup.c
 
 CORETEMP HARDWARE MONITORING DRIVER
 M:	Fenghua Yu <fenghua.yu@intel.com>
@@ -2463,17 +2482,6 @@ M:	Dominik Brodowski <linux@dominikbrodowski.net>
 M:	Thomas Renninger <trenn@suse.de>
 S:	Maintained
 F:	tools/power/cpupower/
-
-CPUSETS
-M:	Li Zefan <lizefan@huawei.com>
-L:	cgroups@vger.kernel.org
-W:	http://www.bullopensource.org/cpuset/
-W:	http://oss.sgi.com/projects/cpusets/
-T:	git git://git.kernel.org/pub/scm/linux/kernel/git/tj/cgroup.git
-S:	Maintained
-F:	Documentation/cgroups/cpusets.txt
-F:	include/linux/cpuset.h
-F:	kernel/cpuset.c
 
 CRAMFS FILESYSTEM
 W:	http://sourceforge.net/projects/cramfs/
@@ -2691,6 +2699,15 @@ L:	linux-decnet-user@lists.sourceforge.net
 S:	Orphan
 F:	Documentation/networking/decnet.txt
 F:	net/decnet/
+
+DECSTATION PLATFORM SUPPORT
+M:	"Maciej W. Rozycki" <macro@linux-mips.org>
+L:	linux-mips@linux-mips.org
+W:	http://www.linux-mips.org/wiki/DECstation
+S:	Maintained
+F:	arch/mips/dec/
+F:	arch/mips/include/asm/dec/
+F:	arch/mips/include/asm/mach-dec/
 
 DEFXX FDDI NETWORK DRIVER
 M:	"Maciej W. Rozycki" <macro@linux-mips.org>
@@ -5756,17 +5773,6 @@ F:	include/linux/mmzone.h
 F:	include/linux/memory_hotplug.h
 F:	include/linux/vmalloc.h
 F:	mm/
-
-MEMORY RESOURCE CONTROLLER
-M:	Johannes Weiner <hannes@cmpxchg.org>
-M:	Michal Hocko <mhocko@suse.cz>
-M:	Balbir Singh <bsingharora@gmail.com>
-M:	KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-L:	cgroups@vger.kernel.org
-L:	linux-mm@kvack.org
-S:	Maintained
-F:	mm/memcontrol.c
-F:	mm/page_cgroup.c
 
 MEMORY TECHNOLOGY DEVICES (MTD)
 M:	David Woodhouse <dwmw2@infradead.org>
@@ -9109,7 +9115,6 @@ F:	drivers/char/tpm/
 
 TRACING
 M:	Steven Rostedt <rostedt@goodmis.org>
-M:	Frederic Weisbecker <fweisbec@gmail.com>
 M:	Ingo Molnar <mingo@redhat.com>
 T:	git git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git perf/core
 S:	Maintained
