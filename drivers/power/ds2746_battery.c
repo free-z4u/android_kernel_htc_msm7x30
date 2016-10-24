@@ -1422,16 +1422,16 @@ static void ds2746_resume(struct device *dev)
 }
 
 static struct dev_pm_ops ds2746_pm_ops = {
-       .prepare = ds2746_suspend,
-       .complete  = ds2746_resume,
+	.prepare = ds2746_suspend,
+	.complete  = ds2746_resume,
 };
 
 MODULE_ALIAS("platform:ds2746-battery");
 static struct platform_driver ds2746_battery_driver =
 {
 	.driver = {
-	.name = "ds2746-battery",
-	.pm = &ds2746_pm_ops,
+		.name = "ds2746-battery",
+		.pm = &ds2746_pm_ops,
 	},
 	.probe = ds2746_battery_probe,
 	.remove = ds2746_battery_remove,
