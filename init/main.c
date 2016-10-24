@@ -727,6 +727,7 @@ static bool __init_or_module initcall_blacklisted(initcall_t fn)
 	struct blacklist_entry *entry;
 	char *fn_name;
 
+#if !defined(CONFIG_MACH_SPADE)
 	fn_name = kasprintf(GFP_KERNEL, "%pf", fn);
 	if (!fn_name)
 		return false;
@@ -741,6 +742,8 @@ static bool __init_or_module initcall_blacklisted(initcall_t fn)
 	}
 
 	kfree(fn_name);
+#endif
+
 	return false;
 }
 #else
@@ -781,10 +784,8 @@ int __init_or_module do_one_initcall(initcall_t fn)
 	int ret;
 	char msgbuf[64];
 
-#if !defined(CONFIG_MACH_SPADE)
 	if (initcall_blacklisted(fn))
 		return -EPERM;
-#endif
 
 	if (initcall_debug)
 		ret = do_one_initcall_debug(fn);

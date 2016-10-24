@@ -23,13 +23,13 @@
 #include <linux/sched.h>
 #include <linux/seq_file.h>
 #include <linux/slab.h>
-#include <linux/sync.h>
 #include <linux/uaccess.h>
-
 #include <linux/anon_inodes.h>
 
+#include <linux/sync.h>
+
 #define CREATE_TRACE_POINTS
-#include <trace/events/sync.h>
+#include "trace/sync.h"
 
 static void sync_fence_signal_pt(struct sync_pt *pt);
 static int _sync_pt_has_signaled(struct sync_pt *pt);
