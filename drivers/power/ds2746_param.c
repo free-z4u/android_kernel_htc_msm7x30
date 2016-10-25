@@ -842,9 +842,6 @@ u32 BAHW_MyGetMSecs(void)
 {
 	struct timespec now;
 	getnstimeofday(&now);
-	/*struct timespec t;
-	t.tv_sec = t.tv_nsec = 0;
-	clock_gettime(CLOCK_MONOTONIC, &t);*/
 	return now.tv_sec * 1000 + now.tv_nsec / 1000000;
 }
 
