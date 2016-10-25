@@ -1649,31 +1649,31 @@ static int get_battery_id(void)
 }
 
 /* battery parameters */
-UINT32 m_parameter_unknown_1280mah[] = {
+u32 m_parameter_unknown_1280mah[] = {
 	10000, 4100, 5500, 3839, 2400, 3759,
 	400, 3667, 0, 3397,
 };
-UINT32 m_parameter_samsung_1230mah[] = {
+u32 m_parameter_samsung_1230mah[] = {
 	/* capacity (in 0.01%) -> voltage (in mV)*/
 	10000, 4135, 7500, 3960, 4700, 3800, 1700, 3727,
 	900, 3674, 300, 3640, 0, 3420,
 };
 
-static UINT32* m_param_tbl[] = {
+static u32* m_param_tbl[] = {
 	m_parameter_unknown_1280mah,
 	m_parameter_samsung_1230mah,
 };
 
-static UINT32 fl_25[] = {1280, 1230};
-static UINT32 pd_m_coef[] = {24, 30};
-static UINT32 pd_m_resl[] = {100, 100};
-static UINT32 pd_t_coef[] = {140, 250};
-static INT32 padc[] = {200, 200};
-static INT32 pw[] = {5, 5};
+static u32 fl_25[] = {1280, 1230};
+static u32 pd_m_coef[] = {24, 30};
+static u32 pd_m_resl[] = {100, 100};
+static u32 pd_t_coef[] = {140, 250};
+static s32 padc[] = {200, 200};
+static s32 pw[] = {5, 5};
 
-static UINT32* pd_m_coef_tbl[] = {pd_m_coef,};
-static UINT32* pd_m_resl_tbl[] = {pd_m_resl,};
-static UINT32 capacity_deduction_tbl_01p[] = {0,};
+static u32* pd_m_coef_tbl[] = {pd_m_coef,};
+static u32* pd_m_resl_tbl[] = {pd_m_resl,};
+static u32 capacity_deduction_tbl_01p[] = {0,};
 
 static struct battery_parameter spade_battery_parameter = {
 	.fl_25 = fl_25,
@@ -1688,7 +1688,7 @@ static struct battery_parameter spade_battery_parameter = {
 	.id_tbl = NULL,
 	.temp_index_tbl = NULL,
 	.m_param_tbl = m_param_tbl,
-	.m_param_tbl_size = sizeof(m_param_tbl)/sizeof(UINT32*),
+	.m_param_tbl_size = sizeof(m_param_tbl)/sizeof(u32*),
 };
 
 static ds2746_platform_data ds2746_pdev_data = {

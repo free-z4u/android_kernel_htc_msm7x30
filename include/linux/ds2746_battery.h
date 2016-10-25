@@ -14,7 +14,6 @@
 #define _DS2746_BATTERY_H_
 #include <linux/notifier.h>
 #include <mach/htc_battery.h>
-#include <linux/wrapper_types.h>
 #include <linux/ds2746_param.h>
 
 
@@ -65,65 +64,65 @@ struct poweralg_type
 	int fst_discharge_acr_mAh;
 	int charging_source;
 	int charging_enable;
-	BOOL is_need_calibrate_at_49p;
-	BOOL is_need_calibrate_at_14p;
-	BOOL is_charge_over_load;
+	bool is_need_calibrate_at_49p;
+	bool is_need_calibrate_at_14p;
+	bool is_charge_over_load;
 	struct battery_type battery;
 	struct protect_flags_type protect_flags;
-	BOOL is_china_ac_in;
-	BOOL is_super_ac;
-	BOOL is_cable_in;
-	BOOL is_voltage_stable;
-	BOOL is_software_charger_timeout;
-	BOOL is_superchg_software_charger_timeout;
-	UINT32 state_start_time_ms;
-	UINT32 last_charger_enable_toggled_time_ms;
-	BOOL is_need_toggle_charger;
+	bool is_china_ac_in;
+	bool is_super_ac;
+	bool is_cable_in;
+	bool is_voltage_stable;
+	bool is_software_charger_timeout;
+	bool is_superchg_software_charger_timeout;
+	u32 state_start_time_ms;
+	u32 last_charger_enable_toggled_time_ms;
+	bool is_need_toggle_charger;
 	ds2746_platform_data* pdata;
 };
 
 struct poweralg_config_type
 {
-	INT32 full_charging_mv;
-	INT32 full_charging_ma;
-	INT32 full_pending_ma;			/* 0 to disable*/
-	INT32 full_charging_timeout_sec;	 /* 0 to disable*/
-	INT32 voltage_recharge_mv;  		 /* 0 to disable*/
-	INT32 capacity_recharge_p;  		 /* 0 to disable*/
-	INT32 voltage_exit_full_mv; 		 /* 0 to disable*/
-	INT32 min_taper_current_mv;		 /* 0 to disable*/
-	INT32 min_taper_current_ma; 		 /* 0 to disable*/
-	INT32 wait_votlage_statble_sec;
-	INT32 predict_timeout_sec;
-	INT32 polling_time_in_charging_sec;
-	INT32 polling_time_in_discharging_sec;
+	s32 full_charging_mv;
+	s32 full_charging_ma;
+	s32 full_pending_ma;			/* 0 to disable*/
+	s32 full_charging_timeout_sec;	 /* 0 to disable*/
+	s32 voltage_recharge_mv;  		 /* 0 to disable*/
+	s32 capacity_recharge_p;  		 /* 0 to disable*/
+	s32 voltage_exit_full_mv; 		 /* 0 to disable*/
+	s32 min_taper_current_mv;		 /* 0 to disable*/
+	s32 min_taper_current_ma; 		 /* 0 to disable*/
+	s32 wait_votlage_statble_sec;
+	s32 predict_timeout_sec;
+	s32 polling_time_in_charging_sec;
+	s32 polling_time_in_discharging_sec;
 
-	BOOL enable_full_calibration;
-	BOOL enable_weight_percentage;
-	INT32 software_charger_timeout_sec;  /* 0 to disable*/ /* for china AC */
-	INT32 superchg_software_charger_timeout_sec;  /* 0 to disable*/ /* for superchg */
-	INT32 charger_hw_safety_timer_watchdog_sec;  /* 0 to disable*/
+	bool enable_full_calibration;
+	bool enable_weight_percentage;
+	s32 software_charger_timeout_sec;  /* 0 to disable*/ /* for china AC */
+	s32 superchg_software_charger_timeout_sec;  /* 0 to disable*/ /* for superchg */
+	s32 charger_hw_safety_timer_watchdog_sec;  /* 0 to disable*/
 
-	BOOL debug_disable_shutdown;
-	BOOL debug_fake_room_temp;
-	BOOL debug_disable_hw_timer;
-	BOOL debug_always_predict;
-	INT32 full_level;                  /* 0 to disable*/
+	bool debug_disable_shutdown;
+	bool debug_fake_room_temp;
+	bool debug_disable_hw_timer;
+	bool debug_always_predict;
+	s32 full_level;                  /* 0 to disable*/
 };
 
 struct battery_parameter {
-	UINT32* fl_25;
-	UINT32** pd_m_coef_tbl_boot;	/* selected by temp_index */
-	UINT32** pd_m_coef_tbl;		/* selected by temp_index */
-	UINT32** pd_m_resl_tbl_boot;	/* selected by temp_index */
-	UINT32** pd_m_resl_tbl;		/* selected by temp_index */
-	UINT32* capacity_deduction_tbl_01p;	/* selected by temp_index */
-	UINT32* pd_t_coef;
-	INT32* padc;	/* less than 0: disable */
-	INT32* pw;	/* less than 0: disable */
-	UINT32* id_tbl;
-	INT32* temp_index_tbl;	/* NULL: disable */
-	UINT32** m_param_tbl;
+	u32* fl_25;
+	u32** pd_m_coef_tbl_boot;	/* selected by temp_index */
+	u32** pd_m_coef_tbl;		/* selected by temp_index */
+	u32** pd_m_resl_tbl_boot;	/* selected by temp_index */
+	u32** pd_m_resl_tbl;		/* selected by temp_index */
+	u32* capacity_deduction_tbl_01p;	/* selected by temp_index */
+	u32* pd_t_coef;
+	s32* padc;	/* less than 0: disable */
+	s32* pw;	/* less than 0: disable */
+	u32* id_tbl;
+	s32* temp_index_tbl;	/* NULL: disable */
+	u32** m_param_tbl;
 	int m_param_tbl_size;
 };
 
@@ -132,9 +131,9 @@ struct _ds2746_platform_data {
 	int (*func_get_thermal_id)(void);
 	int (*func_get_battery_id)(void);
 	void (*func_poweralg_config_init)(struct poweralg_config_type*);
-	int (*func_update_charging_protect_flag)(int, int, int, BOOL*, BOOL*);
+	int (*func_update_charging_protect_flag)(int, int, int, bool*, bool*);
 	int r2_kohm;
-	//UINT32* id_tbl;
+	//u32* id_tbl;
 };
 
 
@@ -150,44 +149,43 @@ struct _ds2746_platform_data {
 /* battery algorithm public functions*/
 
 int get_state_check_interval_min_sec( void);
-BOOL do_power_alg( BOOL is_event_triggered);
-void power_alg_init( struct poweralg_config_type *debug_config);
+bool do_power_alg(bool is_event_triggered);
+void power_alg_init(struct poweralg_config_type *debug_config);
 void power_alg_preinit( void);
-int ds2746_blocking_notify( unsigned long val, void *v);
-void ds2746_charger_control( int type);
+int ds2746_blocking_notify(unsigned long val, void *v);
+void ds2746_charger_control(int type);
 int ds2746_i2c_write_u8( u8 value, u8 reg);
 int ds2746_i2c_read_u8( u8* value, u8 reg);
 int ds2746_battery_id_adc_2_ohm(int id_adc, int r2_kohm);
-void calibrate_id_ohm( struct battery_type *battery);
+void calibrate_id_ohm(struct battery_type *battery);
 /* external function implemented by upper layer*/
 
-/*extern void powerlog_to_file(struct poweralg_type* poweralg);*/
-/*extern void update_os_batt_status(struct poweralg_type* poweralg);*/
-
 #ifdef CONFIG_BATTERY_DS2746
-extern int ds2746_register_notifier( struct notifier_block *nb);
-extern int ds2746_unregister_notifier( struct notifier_block *nb);
-extern int ds2746_get_battery_info( struct battery_info_reply *batt_info);
-extern ssize_t htc_battery_show_attr( struct device_attribute *attr, char *buf);
+extern int ds2746_register_notifier(struct notifier_block *nb);
+extern int ds2746_unregister_notifier(struct notifier_block *nb);
+extern int ds2746_get_battery_info(struct battery_info_reply *batt_info);
+extern ssize_t htc_battery_show_attr(struct device_attribute *attr, char *buf);
 #else
-static int ds2746_register_notifier( struct notifier_block *nb) {
+static int ds2746_register_notifier(struct notifier_block *nb) {
 
 	return 0;
 }
-static int ds2746_unregister_notifier( struct notifier_block *nb) {
+static int ds2746_unregister_notifier(struct notifier_block *nb) {
 
 	return 0;
 }
-static int ds2746_get_battery_info( struct battery_info_reply *batt_info) {
+static int ds2746_get_battery_info(struct battery_info_reply *batt_info) {
 
 	batt_info->level = 10;
 	return 0;
 }
-extern ssize_t htc_battery_show_attr( struct device_attribute *attr, char *buf) {
+extern ssize_t htc_battery_show_attr(struct device_attribute *attr, char *buf) {
 
 	return 0;
 }
 
 #endif
+
+#define CEILING(n, precision)   ((n+precision-1)/precision)  /* ex: CEILING(989, 10)=99, means 98.9 mapping to 99*/
 
 #endif

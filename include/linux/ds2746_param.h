@@ -5,52 +5,52 @@
 
 struct battery_type{
 
-		BOOL is_power_on_reset;
+		bool is_power_on_reset;
 
-		INT32 voltage_mV;
-		INT32 current_mA;
-		INT32 discharge_mA;
-		INT32 charge_counter_mAh;
-		INT32 temp_01c;
-		INT32 last_temp_01c;
-		INT32 id_ohm;
-		INT32 vref_mv;
+		s32 voltage_mV;
+		s32 current_mA;
+		s32 discharge_mA;
+		s32 charge_counter_mAh;
+		s32 temp_01c;
+		s32 last_temp_01c;
+		s32 id_ohm;
+		s32 vref_mv;
 
-		INT32 voltage_adc;
-		INT32 current_adc;
-		INT32 discharge_adc;
-		INT32 charge_counter_adc;
-		INT32 temp_adc;
-		INT32 last_temp_adc;
-		INT32 id_adc;
-		INT32 vref_adc;
+		s32 voltage_adc;
+		s32 current_adc;
+		s32 discharge_adc;
+		s32 charge_counter_adc;
+		s32 temp_adc;
+		s32 last_temp_adc;
+		s32 id_adc;
+		s32 vref_adc;
 
-		INT32 id_index;
-		INT32 charge_full_design_mAh;
-		INT32 charge_full_real_mAh;
+		s32 id_index;
+		s32 charge_full_design_mAh;
+		s32 charge_full_real_mAh;
 
-		INT32 temp_index;
-		INT32 temp_check_index;
+		s32 temp_index;
+		s32 temp_check_index;
 
-		INT32 KADC_01p;
-		INT32 RARC_01p;
-		INT32 pd_m;
+		s32 KADC_01p;
+		s32 RARC_01p;
+		s32 pd_m;
 
-		INT32 software_charge_counter_mAms;
-		INT32 thermal_id;
+		s32 software_charge_counter_mAms;
+		s32 thermal_id;
 };
 
 struct protect_flags_type{
 
-		BOOL is_charging_enable_available;
-		BOOL is_charging_high_current_avaialble;
-		BOOL is_charging_indicator_available;
-		BOOL is_battery_dead;
+		bool is_charging_enable_available;
+		bool is_charging_high_current_avaialble;
+		bool is_charging_indicator_available;
+		bool is_battery_dead;
 #if 0
-		BOOL is_battery_overtemp;
+		bool is_battery_overtemp;
 #endif
-		BOOL is_fake_room_temp;
-		int (*func_update_charging_protect_flag)(int, int, int, BOOL*, BOOL*);
+		bool is_fake_room_temp;
+		int (*func_update_charging_protect_flag)(int, int, int, bool*, bool*);
 };
 
 /* ds2746 register definition*/
@@ -64,8 +64,8 @@ struct protect_flags_type{
 /* function prototypes*/
 
 void battery_capacity_update(struct battery_type *battery, int capacity_01p);
-BOOL battery_param_update(struct battery_type *battery, struct protect_flags_type *flags);
-DWORD BAHW_MyGetMSecs(void);
+bool battery_param_update(struct battery_type *battery, struct protect_flags_type *flags);
+u32 BAHW_MyGetMSecs(void);
 void battery_param_init(struct battery_type *battery);
 
 #endif /* __BATT_PARAM_H__*/
