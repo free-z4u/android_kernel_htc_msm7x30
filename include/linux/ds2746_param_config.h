@@ -28,7 +28,7 @@ battery parameter defines (depend on board design)
 
 ========================================================================================*/
 
-static BOOL support_ds2746_gauge_ic = TRUE;
+static bool support_ds2746_gauge_ic = true;
 
 /*This table is calculated according to temp formula for temp mapping.
 If temp_adc is located on 0-95, then the temp_01c is 700.
@@ -40,7 +40,7 @@ If temp_adc is located on 0-95, then the temp_01c is 700.
 			  ...
 			  1433-2046, then the temp_01c is -11.
 */
-UINT32 TEMP_MAP_300K_100_4360[] =
+u32 TEMP_MAP_300K_100_4360[] =
 {
 0, 96, 100, 103, 107, 111, 115, 119, 123, 127,
 133, 137, 143, 148, 154, 159, 165, 172, 178, 185,
@@ -53,7 +53,7 @@ UINT32 TEMP_MAP_300K_100_4360[] =
 1406, 1433, 2047,
 };
 
-UINT32 TEMP_MAP_300K_47_3440[] =
+u32 TEMP_MAP_300K_47_3440[] =
 {
 0, 68, 70, 72, 74, 76, 78, 81, 83, 85,
 88, 91, 93, 96, 99, 102, 105, 109, 112, 116,
@@ -66,7 +66,7 @@ UINT32 TEMP_MAP_300K_47_3440[] =
 861, 886, 2047,
 };
 
-UINT32 TEMP_MAP_1000K_100_4360[] =
+u32 TEMP_MAP_1000K_100_4360[] =
 {
 0, 30, 31, 32, 34, 35, 36, 38, 39, 40,
 42, 44, 45, 47, 49, 51, 53, 55, 57, 60,
@@ -79,7 +79,7 @@ UINT32 TEMP_MAP_1000K_100_4360[] =
 812, 843, 2047,
 };
 
-UINT32 *TEMP_MAP = TEMP_MAP_300K_100_4360;
+u32 *TEMP_MAP = TEMP_MAP_300K_100_4360;
 
 /* use default parameter if it doesn't be passed from board */
 #define PD_M_COEF_DEFAULT	(30)
@@ -87,7 +87,7 @@ UINT32 *TEMP_MAP = TEMP_MAP_300K_100_4360;
 #define PD_T_COEF_DEFAULT	(250)
 #define CAPACITY_DEDUCTION_DEFAULT	(0)
 
-UINT32 M_PARAMETER_DEFAULT[] =
+u32 M_PARAMETER_DEFAULT[] =
 {
   /* capacity (in 0.01%) -> voltage (in mV)*/
   10000, 4135, 7500, 3960, 4700, 3800, 1700, 3727, 900, 3674, 300, 3640, 0, 3420,
@@ -101,35 +101,35 @@ battery formula coef definition, can be re-programable
 
 /* adc converter*/
 
-static INT32 voltage_adc_to_mv_coef = 244;
-static INT32 voltage_adc_to_mv_resl = 100;
-static INT32 current_adc_to_mv_coef = 625;
-static INT32 current_adc_to_mv_resl = 1580;
-static INT32 discharge_adc_to_mv_coef = 625;
-static INT32 discharge_adc_to_mv_resl = 1580;
-static INT32 acr_adc_to_mv_coef = 625;
-static INT32 acr_adc_to_mv_resl = 1580;
-static INT32 charge_counter_zero_base_mAh = 500;
+static s32 voltage_adc_to_mv_coef = 244;
+static s32 voltage_adc_to_mv_resl = 100;
+static s32 current_adc_to_mv_coef = 625;
+static s32 current_adc_to_mv_resl = 1580;
+static s32 discharge_adc_to_mv_coef = 625;
+static s32 discharge_adc_to_mv_resl = 1580;
+static s32 acr_adc_to_mv_coef = 625;
+static s32 acr_adc_to_mv_resl = 1580;
+static s32 charge_counter_zero_base_mAh = 500;
 
-static INT32 id_adc_overflow = 3067; /* 3067 < id_adc: rawdata overflow */
-static INT32 id_adc_resl = 2047;
-static INT32 temp_adc_resl = 2047;
+static s32 id_adc_overflow = 3067; /* 3067 < id_adc: rawdata overflow */
+static s32 id_adc_resl = 2047;
+static s32 temp_adc_resl = 2047;
 
 /* kadc parameter*/
 
-static INT32 pd_m_bias_mA;    /* the bias current when calculating pd_m*/
+static s32 pd_m_bias_mA;    /* the bias current when calculating pd_m*/
 
 /* over temperature algorithm*/
 
-static INT32 over_high_temp_lock_01c = 450;
-static INT32 over_high_temp_release_01c = 420;
-static INT32 over_low_temp_lock_01c; /*over_low_temp_lock_01c = 0*/
-static INT32 over_low_temp_release_01c = 30;
+static s32 over_high_temp_lock_01c = 450;
+static s32 over_high_temp_release_01c = 420;
+static s32 over_low_temp_lock_01c; /*over_low_temp_lock_01c = 0*/
+static s32 over_low_temp_release_01c = 30;
 
 /* function config*/
 
-static BOOL is_allow_batt_id_change = TRUE;	// MATT
-extern BOOL is_need_battery_id_detection;
+static bool is_allow_batt_id_change = true;	// MATT
+extern bool is_need_battery_id_detection;
 
 /*boot up voltage*/
 

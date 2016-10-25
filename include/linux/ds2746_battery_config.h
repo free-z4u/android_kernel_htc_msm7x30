@@ -34,16 +34,16 @@ static void poweralg_config_init(struct poweralg_config_type *config)
 	config->polling_time_in_charging_sec = 30;
 	config->polling_time_in_discharging_sec = 30;
 
-	config->enable_full_calibration = TRUE;
-	config->enable_weight_percentage = TRUE;
+	config->enable_full_calibration = true;
+	config->enable_weight_percentage = true;
 	config->software_charger_timeout_sec = 0;	/* disabled*/
 	config->superchg_software_charger_timeout_sec = 0;	/* disabled */
 	config->charger_hw_safety_timer_watchdog_sec =  0;	/* disabled */
 
-	config->debug_disable_shutdown = FALSE;
-	config->debug_fake_room_temp = FALSE;
-	config->debug_disable_hw_timer = FALSE;
-	config->debug_always_predict = FALSE;
+	config->debug_disable_shutdown = false;
+	config->debug_fake_room_temp = false;
+	config->debug_disable_hw_timer = false;
+	config->debug_always_predict = false;
 	config->full_level = 0;
 }
 
