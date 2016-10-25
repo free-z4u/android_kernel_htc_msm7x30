@@ -46,21 +46,19 @@ Original Auther:
 #include <mach/board_htc.h>
 
 struct ds2746_device_info {
-
-		struct device *dev;
-		struct device *w1_dev;
-		struct workqueue_struct *monitor_wqueue;
-		struct work_struct monitor_work;
-		/* lock to protect the battery info */
-		struct mutex lock;
-		/* DS2746 data, valid after calling ds2746_battery_read_status() */
-		unsigned long update_time;	/* jiffies when data read */
-		struct alarm alarm;
-		struct wake_lock work_wake_lock;
-		u8 slow_poll;
-		ktime_t last_poll;
+	struct device *dev;
+	struct device *w1_dev;
+	struct workqueue_struct *monitor_wqueue;
+	struct work_struct monitor_work;
+	/* lock to protect the battery info */
+	struct mutex lock;
+	/* DS2746 data, valid after calling ds2746_battery_read_status() */
+	unsigned long update_time;	/* jiffies when data read */
+	struct alarm alarm;
+	struct wake_lock work_wake_lock;
+	u8 slow_poll;
+	ktime_t last_poll;
 };
-static struct wake_lock vbus_wake_lock;
 
 /*========================================================================================
 
@@ -793,21 +791,6 @@ HTC power algorithm implemetation
 
 int get_state_check_interval_min_sec(void)
 {
-	/*the minimal check interval of each states in seconds
-	reserve for change polling rate
-	u32 elapse_time_ms = BAHW_MyGetMSecs() - poweralg.state_start_time_ms;
-	   switch (poweralg.charge_state)
-	   {
-	   case CHARGE_STATE_FULL_WAIT_STABLE:
-		   //! star_lee 20100429 - takes 30 seconds(10 seconds*3 times) to confirm charge full condition
-		   return 10;
-	   case CHARGE_STATE_PREDICTION:
-		   return min(config.predict_timeout_sec, max((s32)(config.predict_timeout_sec - elapse_time_ms/1000), (s32)1));
-	   default:
-		   if ( BAHW_IsChargeSourceIn() )  return config.polling_time_in_charging_sec;
-		   else 						   return config.polling_time_in_discharging_sec;
-	   }
-	*/
 	return 0;
 }
 
@@ -822,7 +805,6 @@ bool do_power_alg(bool is_event_triggered)
 #if !HTC_BATTERY_DS2746_DEBUG_ENABLE
 	bool show_debug_message = false;
 #endif
-	/*pr_info("[BATT]%s(%d) {\n",__func__, is_event_triggered);*/
 	/*------------------------------------------------------
 	1 get battery data and update charge state*/
 	if (!battery_param_update(&poweralg.battery, &poweralg.protect_flags)){
@@ -921,8 +903,6 @@ bool do_power_alg(bool is_event_triggered)
 	/*------------------------------------------------------
 	 4 debug messages and update os battery status*/
 
-	/*powerlog_to_file(&poweralg);
-	update_os_batt_status(&poweralg);*/
 	htc_battery_update_change();
 
 #if HTC_BATTERY_DS2746_DEBUG_ENABLE
@@ -957,7 +937,6 @@ bool do_power_alg(bool is_event_triggered)
 			poweralg.charging_enable);
 #endif
 
-	/*pr_info("[BATT]};\n");*/
 	return true;
 }
 
@@ -1018,13 +997,6 @@ void power_alg_init(struct poweralg_config_type *debug_config)
 		config.debug_always_predict = debug_config->debug_always_predict;
 	}
 
-	/* if ( BAHW_IsTestMode() )
-	 {
-		 config.debug_disable_shutdown = true;
-		 config.debug_fake_room_temp   = true;
-		 config.debug_disable_hw_timer = true;
-	 }*/
-
 	/*-------------------------------------------------------------
 	3. setup default protect flags*/
 	poweralg.protect_flags.is_charging_enable_available = true;
@@ -1037,7 +1009,6 @@ void power_alg_init(struct poweralg_config_type *debug_config)
 	4. setup default battery structure*/
 	battery_param_init(&poweralg.battery);
 
-	/*pr_info("power alg inited with board name <%s>\n", HTC_BATT_BOARD_NAME);*/
 }
 
 void power_alg_preinit(void)
@@ -1240,13 +1211,12 @@ static int cable_status_handler_func(struct notifier_block *nfb,
 
 static struct notifier_block cable_status_handler =
 {
-  .notifier_call = cable_status_handler_func,
+	.notifier_call = cable_status_handler_func,
 };
 
 void ds2746_charger_control(int type)
 {
 	int charge_type = type;
-	/* pr_info("[BATT]%s(%d)\n",__func__, type); */
 
 	switch (charge_type){
 		case DISABLE:
@@ -1311,6 +1281,13 @@ static int ds2746_battery_probe(struct platform_device *pdev)
 	int rc;
 	struct ds2746_device_info *di;
 	ds2746_platform_data *pdata = pdev->dev.platform_data; // MATT: wait to remove
+
+	register_notifier_cable_status(&cable_status_handler);
+
+	rc = ds2746_i2c_init();
+	if (rc < 0){
+		return rc;
+	}
 
 	poweralg.pdata = pdev->dev.platform_data;
 	poweralg.battery.thermal_id = pdata->func_get_thermal_id();
@@ -1379,6 +1356,8 @@ static int ds2746_battery_remove(struct platform_device *pdev)
 	cancel_work_sync(&di->monitor_work);
 	destroy_workqueue(di->monitor_wqueue);
 
+	ds2746_i2c_exit();
+
 	return 0;
 }
 
@@ -1436,29 +1415,7 @@ static struct platform_driver ds2746_battery_driver =
 	.remove = ds2746_battery_remove,
 };
 
-static int __init ds2746_battery_init(void)
-{
-	int ret;
-
-	wake_lock_init(&vbus_wake_lock, WAKE_LOCK_SUSPEND, "vbus_present");
-	register_notifier_cable_status(&cable_status_handler);
-
-	ret = ds2746_i2c_init();
-	if (ret < 0){
-		return ret;
-	}
-
-	return platform_driver_register(&ds2746_battery_driver);
-}
-
-static void __exit ds2746_battery_exit(void)
-{
-	ds2746_i2c_exit();
-	platform_driver_unregister(&ds2746_battery_driver);
-}
-
-module_init(ds2746_battery_init);
-module_exit(ds2746_battery_exit);
+module_platform_driver(ds2746_battery_driver);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Andy.YS Wang  <Andy.ys_wang@htc.com>");
