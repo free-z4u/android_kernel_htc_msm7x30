@@ -18,7 +18,7 @@
 
 	chosen {
 		bootargs = "board_saga.disable_uart2=0 board_saga.usb_h2w_sw=0 board_saga.disable_sdcard=0 diag.enabled=0 board_saga.debug_uart=0 smisize=0 userdata_sel=0 androidboot.emmc=true androidboot.pagesize=4096 ats=0  androidboot.lb=1 androidboot.baseband=3831.19.00.110 androidboot.cid=11111111 androidboot.batt_poweron=good_battery androidboot.carrier=ALL androidboot.mid=PG88***** androidboot.keycaps=qwerty androidboot.mode=normal androidboot.serialno=SH153TJ00870 androidboot.bootloader=2.02.0002 zygote_oneshot=off msm_watchdog.enable=1 kmemleak=off no_console_suspend=1 androidboot.selinux=permissive androidboot.hardware=htc7x30";
-		linux,initrd-end = <0x054cfdc9>;
+		linux,initrd-end = <0x054d66b9>;
 		linux,initrd-start = <0x05400000>;
 		linux,engineerid = <0x00000000>;
 		linux,smi = <0x00000000>;
