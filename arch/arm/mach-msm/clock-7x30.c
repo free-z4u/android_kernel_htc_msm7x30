@@ -3025,40 +3025,17 @@ static void __init set_clock_ownership(void)
 		struct clk *remote = ownership_map[i].remote;
 
 		lk = &ownership_map[i].lk;
-		
-		if (reg && !(*reg & bit)) {
-			if (msm_clocks_7x30[i].clk != remote) {
-				msm_clocks_7x30[i].clk = remote;
-				pr_info(" { .con_id=\"%s\", .dev_id=\"%s\", .clk=NULL/*{.dbg_name='%s'}*/},\n",
-					msm_clocks_7x30[i].con_id?msm_clocks_7x30[i].con_id:"",
-					msm_clocks_7x30[i].dev_id?msm_clocks_7x30[i].dev_id:"",
-					msm_clocks_7x30[i].clk?(
-						msm_clocks_7x30[i].clk->dbg_name?msm_clocks_7x30[i].clk->dbg_name:""
-					):"NULL"
-				);
-			}
-		} else {
-			if (msm_clocks_7x30[i].clk != lk->clk) {
-				msm_clocks_7x30[i].clk = lk->clk;
-				pr_info(" { .con_id=\"%s\", .dev_id=\"%s\", .clk=NULL/*{.dbg_name='%s'}*/},\n",
-					msm_clocks_7x30[i].con_id?msm_clocks_7x30[i].con_id:"",
-					msm_clocks_7x30[i].dev_id?msm_clocks_7x30[i].dev_id:"",
-					msm_clocks_7x30[i].clk?(
-					msm_clocks_7x30[i].clk->dbg_name?msm_clocks_7x30[i].clk->dbg_name:""
-					):"NULL"
-				);
-			}
-		}
 
-#if 0
-		pr_info(" { .con_id=\"%s\", .dev_id=\"%s\", .clk=NULL/*{.dbg_name='%s'}*/},\n",
+		pr_info(" { %s => %s|%s -> %s}},\n",
 			msm_clocks_7x30[i].con_id?msm_clocks_7x30[i].con_id:"",
-			msm_clocks_7x30[i].dev_id?msm_clocks_7x30[i].dev_id:"",
-			msm_clocks_7x30[i].clk?(
-				msm_clocks_7x30[i].clk->dbg_name?msm_clocks_7x30[i].clk->dbg_name:""
-			):"NULL"
+			lk->clk?(
+				lk->clk->dbg_name?lk->clk->dbg_name:""
+			):"NULL",
+			remote?(
+				remote->dbg_name?remote->dbg_name:""
+			):"NULL",
+			reg && !(*reg & bit)?"N":"Y"
 		);
-#endif
 	}
 }
 
