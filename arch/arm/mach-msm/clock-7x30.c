@@ -2881,138 +2881,7 @@ static struct clk_local_ownership {
 		O(GLBL), BIT(8), &dummy_clk },
 };
 
-static struct clk_lookup msm_clocks_7x30[ARRAY_SIZE(ownership_map)] = {
-	/* Sources */
-	{ .con_id="pll1_clk",		.dev_id="acpu",			.clk=&pll1_clk.c},
-	{ .con_id="pll2_clk",		.dev_id="acpu",			.clk=&pll2_clk.c},
-	{ .con_id="pll3_clk",		.dev_id="acpu",			.clk=&pll3_clk.c},
-	{ .con_id="measure",		.dev_id="debug",		.clk=&measure_clk},
-
-	/* PCOM */
-	{ .con_id="adsp_clk",		.dev_id=NULL,			.clk=&adsp_clk.c},
-	{ .con_id="codec_ssbi_clk",	.dev_id=NULL,			.clk=&codec_ssbi_clk.c},
-	{ .con_id="ebi1_dcvs_clk",	.dev_id=NULL,			.clk=&ebi1_dcvs_clk.c},
-	{ .con_id="ebi1_fixed_clk",	.dev_id=NULL,			.clk=&ebi1_fixed_clk.c},
-	{ .con_id="ecodec_clk",		.dev_id=NULL,			.clk=&ecodec_clk.c},
-	{ .con_id="core_clk",		.dev_id=NULL,			.clk=&gp_clk.c},
-	{ .con_id="core_clk",		.dev_id="msm_serial.2",		.clk=&uart3_clk.c},
-	{ .con_id="phy_clk",		.dev_id="msm_otg",		.clk=&usb_phy_clk.c},
-
-	/* Voters */
-	{ .con_id="mem_clk",		.dev_id="dtv.0",		.clk=&ebi_dtv_clk.c},
-	{ .con_id="bus_clk",		.dev_id="kgsl-2d0.0",		.clk=&ebi_grp_2d_clk.c},
-	{ .con_id="bus_clk",		.dev_id="kgsl-3d0.0",		.clk=&ebi_grp_3d_clk.c},
-	{ .con_id="mem_clk",		.dev_id="lcdc.0",		.clk=&ebi_lcdc_clk.c},
-	{ .con_id="mem_clk",		.dev_id="mddi.0",		.clk=&ebi_mddi_clk.c},
-	{ .con_id="mem_clk",		.dev_id="tvenc.0",		.clk=&ebi_tv_clk.c},
-	{ .con_id="mem_clk",		.dev_id="msm_vidc.0",		.clk=&ebi_vcd_clk.c},
-	{ .con_id="ebi1_vfe_clk",	.dev_id=NULL,			.clk=&ebi_vfe_clk.c},
-	{ .con_id="mem_clk",		.dev_id="msm_dmov",		.clk=&ebi_adm_clk.c},
-
-	/*
-	 * This is a many-to-one mapping because we don't know how the remote
-	 * clock code has decided to handle the dependencies between clocks for
-	 * a particular hardware block. We determine the ownership for all the
-	 * clocks going into a block by checking the ownership bit of one
-	 * register (usually the ns register).
-	 */
-	{ .con_id="core_clk",		.dev_id="kgsl-2d0.0",		.clk=&p_grp_2d_clk.c},
-	{ .con_id="core_clk",		.dev_id="footswitch-pcom.0",	.clk=&p_grp_2d_clk.c},
-	{ .con_id="iface_clk",		.dev_id="kgsl-2d0.0",		.clk=&p_grp_2d_p_clk.c},
-	{ .con_id="iface_clk",		.dev_id="footswitch-pcom.0",	.clk=&p_grp_2d_p_clk.c},
-	{ .con_id="hdmi_clk",		.dev_id="dtv.0",		.clk=&p_hdmi_clk.c},
-	{ .con_id="jpeg_clk",		.dev_id=NULL,			.clk=&p_jpeg_clk.c},
-	{ .con_id="jpeg_pclk",		.dev_id=NULL,			.clk=&p_jpeg_p_clk.c},
-	{ .con_id="lpa_codec_clk",	.dev_id=NULL,			.clk=&p_lpa_codec_clk.c},
-	{ .con_id="lpa_core_clk",	.dev_id=NULL,			.clk=&p_lpa_core_clk.c},
-	{ .con_id="lpa_pclk",		.dev_id=NULL,			.clk=&p_lpa_p_clk.c},
-	{ .con_id="mi2s_m_clk",		.dev_id=NULL,			.clk=&p_mi2s_m_clk.c},
-	{ .con_id="mi2s_s_clk",		.dev_id=NULL,			.clk=&p_mi2s_s_clk.c},
-	{ .con_id="mi2s_codec_rx_m_clk",.dev_id=NULL,			.clk=&p_mi2s_codec_rx_m_clk.c},
-	{ .con_id="mi2s_codec_rx_s_clk",.dev_id=NULL,			.clk=&p_mi2s_codec_rx_s_clk.c},
-	{ .con_id="mi2s_codec_tx_m_clk",.dev_id=NULL,			.clk=&p_mi2s_codec_tx_m_clk.c},
-	{ .con_id="mi2s_codec_tx_s_clk",.dev_id=NULL,			.clk=&p_mi2s_codec_tx_s_clk.c},
-	{ .con_id="sdac_clk",		.dev_id=NULL,			.clk=&p_sdac_clk.c},
-	{ .con_id="sdac_m_clk",		.dev_id=NULL,			.clk=&p_sdac_m_clk.c},
-	{ .con_id="vfe_clk",		.dev_id=NULL,			.clk=&p_vfe_clk.c},
-	{ .con_id="core_clk",		.dev_id="footswitch-pcom.8",	.clk=&p_vfe_clk.c},
-	{ .con_id="vfe_camif_clk",	.dev_id=NULL,			.clk=&p_vfe_camif_clk.c},
-	{ .con_id="vfe_mdc_clk",	.dev_id=NULL,			.clk=&p_vfe_mdc_clk.c},
-	{ .con_id="vfe_pclk",		.dev_id=NULL,			.clk=&p_vfe_p_clk.c},
-	{ .con_id="iface_clk",		.dev_id="footswitch-pcom.8",	.clk=&p_vfe_p_clk.c},
-	{ .con_id="core_clk",		.dev_id="kgsl-3d0.0",		.clk=&p_grp_3d_clk.c},
-	{ .con_id="core_clk",		.dev_id="footswitch-pcom.2",	.clk=&p_grp_3d_clk.c},
-	{ .con_id="iface_clk",		.dev_id="kgsl-3d0.0",		.clk=&p_grp_3d_p_clk.c},
-	{ .con_id="iface_clk",		.dev_id="footswitch-pcom.2",	.clk=&p_grp_3d_p_clk.c},
-	{ .con_id="src_clk",		.dev_id="kgsl-3d0.0",		.clk=&p_grp_3d_clk.c},
-	{ .con_id="src_clk",		.dev_id="footswitch-pcom.2",	.clk=&p_grp_3d_clk.c},
-	{ .con_id="mem_clk",		.dev_id="kgsl-3d0.0",		.clk=&p_imem_clk.c},
-	{ .con_id="lcdc_clk",		.dev_id="lcdc.0",		.clk=&p_mdp_lcdc_pad_pclk_clk.c},
-	{ .con_id="mdp_clk",		.dev_id="lcdc.0",		.clk=&p_mdp_lcdc_pclk_clk.c},
-	{ .con_id="iface_clk",		.dev_id="mdp.0",		.clk=&p_mdp_p_clk.c},
-	{ .con_id="iface_clk",		.dev_id="footswitch-pcom.4",	.clk=&p_mdp_p_clk.c},
-	{ .con_id="vsync_clk",		.dev_id="mdp.0",		.clk=&p_mdp_vsync_clk.c},
-	{ .con_id="ref_clk",		.dev_id="msm_tsif.0",		.clk=&p_tsif_ref_clk.c},
-	{ .con_id="iface_clk",		.dev_id="msm_tsif.0",		.clk=&p_tsif_p_clk.c},
-	{ .con_id="src_clk",		.dev_id="dtv.0",		.clk=&p_tv_enc_clk.c},
-	{ .con_id="tv_dac_clk",		.dev_id=NULL,			.clk=&p_tv_dac_clk.c},
-	{ .con_id="tv_enc_clk",		.dev_id=NULL,			.clk=&p_tv_enc_clk.c},
-	{ .con_id="core_clk",		.dev_id="msm_mddi.1",		.clk=&p_emdh_clk.c},
-	{ .con_id="iface_clk",		.dev_id="msm_mddi.1",		.clk=&p_emdh_p_clk.c},
-	{ .con_id="core_clk",		.dev_id="msm_i2c.0",		.clk=&p_i2c_clk.c},
-	{ .con_id="core_clk",		.dev_id="msm_i2c.2",		.clk=&p_i2c_2_clk.c},
-	{ .con_id="mdc_clk",		.dev_id=NULL,			.clk=&p_mdc_clk.c},
-	{ .con_id="core_clk",		.dev_id="mddi.0",		.clk=&p_pmdh_clk.c},
-	{ .con_id="iface_clk",		.dev_id="mddi.0",		.clk=&p_pmdh_p_clk.c},
-	{ .con_id="core_clk",		.dev_id="msm_sdcc.1",		.clk=&p_sdc1_clk.c},
-	{ .con_id="iface_clk",		.dev_id="msm_sdcc.1",		.clk=&p_sdc1_p_clk.c},
-	{ .con_id="core_clk",		.dev_id="msm_sdcc.2",		.clk=&p_sdc2_clk.c},
-	{ .con_id="iface_clk",		.dev_id="msm_sdcc.2",		.clk=&p_sdc2_p_clk.c},
-	{ .con_id="core_clk",		.dev_id="msm_sdcc.3",		.clk=&p_sdc3_clk.c},
-	{ .con_id="iface_clk",		.dev_id="msm_sdcc.3",		.clk=&p_sdc3_p_clk.c},
-	{ .con_id="core_clk",		.dev_id="msm_sdcc.4",		.clk=&p_sdc4_clk.c},
-	{ .con_id="iface_clk",		.dev_id="msm_sdcc.4",		.clk=&p_sdc4_p_clk.c},
-	{ .con_id="core_clk",		.dev_id="msm_serial.1",		.clk=&p_uart2_clk.c},
-	{ .con_id="alt_core_clk",	.dev_id="msm_hsusb_host.0",	.clk=&p_usb_hs2_clk.c},
-	{ .con_id="core_clk",		.dev_id="msm_hsusb_host.0",	.clk=&p_usb_hs2_core_clk.c},
-	{ .con_id="iface_clk",		.dev_id="msm_hsusb_host.0",	.clk=&p_usb_hs2_p_clk.c},
-	{ .con_id="alt_core_clk",	.dev_id=NULL,			.clk=&p_usb_hs3_clk.c},
-	{ .con_id="core_clk",		.dev_id=NULL,			.clk=&p_usb_hs3_core_clk.c},
-	{ .con_id="iface_clk",		.dev_id=NULL,			.clk=&p_usb_hs3_p_clk.c},
-	{ .con_id="core",		.dev_id="i2c_qup.4",		.clk=&p_qup_i2c_clk.c},
-	{ .con_id="core_clk",		.dev_id="spi_qsd.0",		.clk=&p_spi_clk.c},
-	{ .con_id="iface_clk",		.dev_id="spi_qsd.0",		.clk=&p_spi_p_clk.c},
-	{ .con_id="core_clk",		.dev_id="msm_serial.0",		.clk=&p_uart1_clk.c},
-	{ .con_id="uartdm_clk",		.dev_id="msm_serial_hs.0",	.clk=&p_uart1dm_clk.c},
-	{ .con_id="alt_core_clk",	.dev_id="msm_otg",		.clk=&p_usb_hs_clk.c},
-	{ .con_id="core_clk",		.dev_id="msm_otg",		.clk=&p_usb_hs_core_clk.c},
-	{ .con_id="iface_clk",		.dev_id="msm_otg",		.clk=&p_usb_hs_p_clk.c},
-	{ .con_id="cam_m_clk",		.dev_id=NULL,			.clk=&p_cam_m_clk.c},
-	{ .con_id="camif_pad_pclk",	.dev_id=NULL,			.clk=&p_camif_pad_p_clk.c},
-	{ .con_id="iface",		.dev_id="i2c_qup.4",		.clk=&p_camif_pad_p_clk.c},
-	{ .con_id="csi_clk",		.dev_id=NULL,			.clk=&p_csi0_clk.c},
-	{ .con_id="csi_vfe_clk",	.dev_id=NULL,			.clk=&p_csi0_vfe_clk.c},
-	{ .con_id="csi_pclk",		.dev_id=NULL,			.clk=&p_csi0_p_clk.c},
-	{ .con_id="core_clk",		.dev_id="mdp.0",		.clk=&p_mdp_clk.c},
-	{ .con_id="core_clk",		.dev_id="footswitch-pcom.4",	.clk=&p_mdp_clk.c},
-	{ .con_id="core_clk",		.dev_id="msm_vidc.0",		.clk=&p_mfc_clk.c},
-	{ .con_id="core_clk",		.dev_id="footswitch-pcom.5",	.clk=&p_mfc_clk.c},
-	{ .con_id="core_div2_clk",	.dev_id="msm_vidc.0",		.clk=&p_mfc_div2_clk.c},
-	{ .con_id="iface_clk",		.dev_id="msm_vidc.0",		.clk=&p_mfc_p_clk.c},
-	{ .con_id="iface_clk",		.dev_id="footswitch-pcom.5",	.clk=&p_mfc_p_clk.c},
-	{ .con_id="vpe_clk",		.dev_id=NULL,			.clk=&p_vpe_clk.c},
-	{ .con_id="core_clk",		.dev_id="footswitch-pcom.9",	.clk=&p_vpe_clk.c},
-	{ .con_id="core_clk",		.dev_id="msm_dmov",		.clk=&adm_clk.c},
-	{ .con_id="iface_clk",		.dev_id="msm_dmov",		.clk=&adm_p_clk.c},
-	{ .con_id="core_clk",		.dev_id="qce.0",		.clk=&ce_clk.c},
-	{ .con_id="core_clk",		.dev_id="crypto.0",		.clk=&ce_clk.c},
-	{ .con_id="core_clk",		.dev_id="msm_rotator.0",	.clk=&axi_rotator_clk.c},
-	{ .con_id="core_clk",		.dev_id="footswitch-pcom.6",	.clk=&axi_rotator_clk.c},
-	{ .con_id="mem_clk",		.dev_id="msm_rotator.0",	.clk=&rotator_imem_clk.c},
-	{ .con_id="iface_clk",		.dev_id="msm_rotator.0",	.clk=&rotator_p_clk.c},
-	{ .con_id="iface_clk",		.dev_id="footswitch-pcom.6",	.clk=&rotator_p_clk.c},
-	{ .con_id="iface_clk",		.dev_id="msm_serial_hs.0",	.clk=&uart1dm_p_clk.c},
-};
+static struct clk_lookup msm_clocks_7x30[ARRAY_SIZE(ownership_map)];
 
 static void __init set_clock_ownership(void)
 {
@@ -3025,17 +2894,10 @@ static void __init set_clock_ownership(void)
 		struct clk *remote = ownership_map[i].remote;
 
 		lk = &ownership_map[i].lk;
+		memcpy(&msm_clocks_7x30[i], lk, sizeof(*lk));
 
-		pr_info(" { %s => %s|%s -> %s}},\n",
-			msm_clocks_7x30[i].con_id?msm_clocks_7x30[i].con_id:"",
-			lk->clk?(
-				lk->clk->dbg_name?lk->clk->dbg_name:""
-			):"NULL",
-			remote?(
-				remote->dbg_name?remote->dbg_name:""
-			):"NULL",
-			reg && !(*reg & bit)?"N":"Y"
-		);
+		if (reg && !(*reg & bit))
+			msm_clocks_7x30[i].clk = remote;
 	}
 }
 
