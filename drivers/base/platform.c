@@ -24,6 +24,7 @@
 #include <linux/idr.h>
 #include <linux/acpi.h>
 #include <linux/clk/clk-conf.h>
+#include <linux/limits.h>
 
 #include "base.h"
 #include "power/power.h"
