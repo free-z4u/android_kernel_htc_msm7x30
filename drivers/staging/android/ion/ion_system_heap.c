@@ -62,13 +62,7 @@ static inline unsigned int order_to_size(int order)
 
 struct ion_system_heap {
 	struct ion_heap heap;
-	struct ion_page_pool **pools;
-};
-
-struct page_info {
-	struct page *page;
-	unsigned int order;
-	struct list_head list;
+	struct ion_page_pool *pools[0];
 };
 
 static struct page *alloc_buffer_page(struct ion_system_heap *heap,
@@ -97,9 +91,9 @@ static struct page *alloc_buffer_page(struct ion_system_heap *heap,
 }
 
 static void free_buffer_page(struct ion_system_heap *heap,
-			     struct ion_buffer *buffer, struct page *page,
-			     unsigned int order)
+			     struct ion_buffer *buffer, struct page *page)
 {
+	unsigned int order = compound_order(page);
 	bool cached = ion_buffer_cached(buffer);
 
 	if (!cached && !(buffer->private_flags & ION_PRIV_FLAG_SHRINKER_FREE)) {
@@ -112,18 +106,13 @@ static void free_buffer_page(struct ion_system_heap *heap,
 }
 
 
-static struct page_info *alloc_largest_available(struct ion_system_heap *heap,
-						 struct ion_buffer *buffer,
-						 unsigned long size,
-						 unsigned int max_order)
+static struct page *alloc_largest_available(struct ion_system_heap *heap,
+					    struct ion_buffer *buffer,
+					    unsigned long size,
+					    unsigned int max_order)
 {
 	struct page *page;
-	struct page_info *info;
 	int i;
-
-	info = kmalloc(sizeof(struct page_info), GFP_KERNEL);
-	if (!info)
-		return NULL;
 
 	for (i = 0; i < num_orders; i++) {
 		if (size < order_to_size(orders[i]))
@@ -135,11 +124,8 @@ static struct page_info *alloc_largest_available(struct ion_system_heap *heap,
 		if (!page)
 			continue;
 
-		info->page = page;
-		info->order = orders[i];
-		return info;
+		return page;
 	}
-	kfree(info);
 
 	return NULL;
 }
