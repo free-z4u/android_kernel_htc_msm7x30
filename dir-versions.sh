@@ -37,6 +37,10 @@ git checkout HEAD -- lib/lzo/lzo1x_decompress_safe.c
 # drivers/base/Kconfig
 # drivers/base/firmware_class.c
 # include/linux/firmware.h
+# Documentation/ABI/testing/sysfs-bus-platform
+# drivers/base/platform.c
+# include/linux/platform_device.h
+
 
 #!/bin/sh
 LIST=`git diff v3.15 --name-only | grep -v "\.h" | grep -v "Makefile" | grep -v "Kconfig" | sed 's|\.c|\.o|g'`
