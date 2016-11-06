@@ -5599,21 +5599,7 @@ static const char * const qcom_dt_match[] __initconst = {
 	NULL
 };
 
-static void __init saga_fixup(struct machine_desc *desc, struct tag *tags,
-		char **cmdline, struct meminfo *mi)
-{
-	//int mem = parse_tag_memsize((const struct tag *)tags);
-	engineerid = parse_tag_engineerid(tags);
-
-	mi->nr_banks = 2;
-	mi->bank[0].start = MSM_LINUX_BASE1;
-	mi->bank[0].size = MSM_LINUX_SIZE1;
-	mi->bank[1].start = MSM_LINUX_BASE2;
-	mi->bank[1].size = MSM_LINUX_SIZE2;
-}
-
 MACHINE_START(SAGA, "saga")
-	.fixup = saga_fixup,
 	.map_io = saga_map_io,
 	.reserve = saga_reserve,
 	.init_irq = saga_init_irq,

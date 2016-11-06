@@ -3461,26 +3461,12 @@ static void __init spade_init_early(void)
 	spade_allocate_memory_regions();
 }
 
-static void __init spade_fixup(struct machine_desc *desc, struct tag *tags,
-								char **cmdline, struct meminfo *mi)
-{
-	//int mem = parse_tag_memsize((const struct tag *)tags);
-	engineerid = parse_tag_engineerid(tags);
-
-	mi->nr_banks = 2;
-	mi->bank[0].start = MSM_LINUX_BASE1;
-	mi->bank[0].size = MSM_LINUX_SIZE1 + MSM_MEM_256MB_OFFSET;
-	mi->bank[1].start = MSM_LINUX_BASE2;
-	mi->bank[1].size = MSM_LINUX_SIZE2;
-}
-
 static const char * const qcom_dt_match[] __initconst = {
 	"qcom,msm8255",
 	NULL
 };
 
 MACHINE_START(SPADE, "spade")
-	.fixup = spade_fixup,
 	.map_io = spade_map_io,
 	.reserve = spade_reserve,
 	.init_irq = msm_init_irq,
