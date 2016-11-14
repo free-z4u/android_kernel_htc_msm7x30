@@ -44,14 +44,14 @@ void kgsl_sync_pt_destroy(struct sync_pt *pt)
 static struct sync_pt *kgsl_sync_pt_dup(struct sync_pt *pt)
 {
 	struct kgsl_sync_pt *kpt = (struct kgsl_sync_pt *) pt;
-	return kgsl_sync_pt_create(pt->parent, kpt->timestamp);
+	return kgsl_sync_pt_create(sync_pt_parent(pt), kpt->timestamp);
 }
 
 static int kgsl_sync_pt_has_signaled(struct sync_pt *pt)
 {
 	struct kgsl_sync_pt *kpt = (struct kgsl_sync_pt *) pt;
 	struct kgsl_sync_timeline *ktimeline =
-		 (struct kgsl_sync_timeline *) pt->parent;
+		 (struct kgsl_sync_timeline *) sync_pt_parent(pt);
 	unsigned int ts = kpt->timestamp;
 	unsigned int last_ts = ktimeline->last_timestamp;
 	if (timestamp_cmp(last_ts, ts) >= 0) {

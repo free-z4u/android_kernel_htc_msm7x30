@@ -144,6 +144,11 @@ struct sync_pt {
 	ktime_t			timestamp;
 };
 
+static inline struct sync_timeline *sync_pt_parent(struct sync_pt *pt)
+{
+	return pt->parent;
+}
+
 /**
  * struct sync_fence - sync fence
  * @file:		file representing this fence

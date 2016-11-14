@@ -1066,53 +1066,10 @@ config USB_ANDROID_RNDIS
 	help
 	  Provides RNDIS ethernet function for android gadget driver.
 
-config USB_ANDROID_RMNET
-	boolean "RmNet function driver"
-	depends on USB_G_ANDROID
-	default n
-	help
-	  Enabling this option adds rmnet support to the
-	  android gadget. Rmnet is an alternative to CDC-ECM
-	  and Windows RNDIS. It uses QUALCOMM MSM Interface
-	  for control transfers. It acts like a bridge between
-	  Host and modem found in MSM chipsets.
-
-config RMNET_SMD_CTL_CHANNEL
-	string "control SMD channel name"
-	depends on USB_ANDROID_RMNET
-	default ""
-	help
-	  Control SMD channel for transferring QMI messages
-
-config RMNET_SMD_DATA_CHANNEL
-	string "Data SMD channel name"
-	depends on USB_ANDROID_RMNET
-	default ""
-	help
-	  Data SMD channel for transferring network data
-
-config USB_ANDROID_RMNET_CTRL_SMD
-	boolean "RmNet control over SMD driver"
-	depends on  USB_G_ANDROID && MSM_SMD
-	help
-	  Enabling this option adds rmnet control over SMD
-	  support to the android gadget. Rmnet is an
-	  alternative to CDC-ECM and Windows RNDIS.
-	  It uses QUALCOMM MSM Interface for control
-	  transfers. This option enables only control interface.
-	  Data interface has to be enabled separately
-
-config USB_F_SERIAL
-	boolean "generic serial function driver"
-	depends on USB_G_ANDROID
-	default n
-	help
-	  Say "y" to link the driver statically, or "m" to build
-	  as a part of "g_android"
-
 config MODEM_SUPPORT
 	boolean "modem support in generic serial function driver"
 	depends on USB_F_SERIAL
+	depends on USB_G_ANDROID
 	default y
 	help
 	  This feature enables the modem functionality in the
@@ -1127,18 +1084,6 @@ config USB_ANDROID_SERIAL
 	boolean "Android gadget Serial function"
 	depends on USB_G_ANDROID
 	help
-
-config USB_F_SERIAL_SMD
-	boolean "generic serial function driver over SMD"
-	depends on USB_G_ANDROID && MSM_SMD
-	default n
-	help
-	   Gadget serial driver is one way to communicate with modem
-	   device. This option enables serial driver to communicate
-	   to modem device using smd. It makes very minimal changes
-	   to Gadget usb serial interface(f_serial.c) and adds
-	   separate transport layer u_smd(very similar to u_serial.c)
-	   Say "y" to link the driver statically
 
 if TTY
 
@@ -1304,61 +1249,5 @@ config USB_G_WEBCAM
 	  dynamically linked module called "g_webcam".
 
 endchoice
-
-config USB_ACCESSORY_DETECT
-	boolean "USB ACCESSORY DETECT"
-	default n
-
-config USB_ACCESSORY_DETECT_BY_ADC
-	 boolean "DETECT USB ACCESSORY BY PMIC ADC"
-	 default n
-
-config MODEM_SUPPORT
-	boolean "modem support in generic serial function driver"
-	depends on USB_G_ANDROID
-	default y
-	help
-	  This feature enables the modem functionality in the
-	  generic serial.
-	  adds interrupt endpoint support to send modem notifications
-	  to host.
-	  adds CDC descriptors to enumerate the generic serial as MODEM.
-	  adds CDC class requests to configure MODEM line settings.
-	  Say "y" to enable MODEM support in the generic serial driver.
-
-config RMNET_SMD_CTL_CHANNEL
-	string "RMNET control SMD channel name"
-	depends on USB_G_ANDROID && MSM_SMD
-	default ""
-	help
-	  Control SMD channel for transferring QMI messages
-
-config RMNET_SMD_DATA_CHANNEL
-	string "RMNET Data SMD channel name"
-	depends on USB_G_ANDROID && MSM_SMD
-	default ""
-	help
-	  Data SMD channel for transferring network data
-
-config USB_ANDROID_RMNET_CTRL_SMD
-	boolean "RmNet(BAM) control over SMD driver"
-	depends on MSM_SMD
-	help
-	  Enabling this option adds rmnet control over SMD
-	  support to the android gadget. Rmnet is an
-	  alternative to CDC-ECM and Windows RNDIS.
-	  It uses QUALCOMM MSM Interface for control
-	  transfers. This option enables only control interface.
-	  Data interface used is BAM.
-
-config USB_HUB
-	boolean "USB HUB driver"
-	depends on USB_G_ANDROID
-	default n
-
-config USB_GADGET_VERIZON_PRODUCT_ID
-	boolean "Verizon Product ID Mapping"
-	depends on USB_G_ANDROID
-	default n
 
 endif # USB_GADGET

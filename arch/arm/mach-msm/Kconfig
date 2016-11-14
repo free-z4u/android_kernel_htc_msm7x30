@@ -1007,3 +1007,6 @@ config MMC_MSM_SDC4_SUPPORT
 	help
 	  Select Y to enable Slot 4.
 
+config USB_ACCESSORY_DETECT_BY_ADC
+	 boolean "DETECT USB ACCESSORY BY PMIC ADC"
+	 default n
