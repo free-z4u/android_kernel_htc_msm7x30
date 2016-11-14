@@ -33,7 +33,6 @@ git checkout HEAD -- lib/lzo/lzo1x_decompress_safe.c
 # drivers/staging/android/sync_debug.c
 # drivers/staging/android/trace/sync.h
 # include/linux/sync.h
-# drivers/base/Kconfig
 # drivers/base/firmware_class.c
 # drivers/base/platform.c
 
