@@ -1,4 +1,4 @@
-/* drivers/video/fbdev/msm/mdp_ppp.c
+/* drivers/video/msm/mdp_ppp.c
  *
  * Copyright (C) 2007 QUALCOMM Incorporated
  * Copyright (C) 2007 Google Incorporated
