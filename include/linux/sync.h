@@ -42,8 +42,6 @@ struct seq_file;
  *			 -1 if a will signal before b
  * @free_pt:		called before sync_pt is freed
  * @release_obj:	called before sync_timeline is freed
- * @print_obj:		deprecated
- * @print_pt:		deprecated
  * @fill_driver_data:	write implementation specific driver data to data.
  *			  should return an error if there is not enough room
  *			  as specified by size.  This information is returned
@@ -68,13 +66,6 @@ struct sync_timeline_ops {
 
 	/* optional */
 	void (*release_obj)(struct sync_timeline *sync_timeline);
-
-	/* deprecated */
-	void (*print_obj)(struct seq_file *s,
-			  struct sync_timeline *sync_timeline);
-
-	/* deprecated */
-	void (*print_pt)(struct seq_file *s, struct sync_pt *sync_pt);
 
 	/* optional */
 	int (*fill_driver_data)(struct sync_pt *syncpt, void *data, int size);
@@ -113,7 +104,9 @@ struct sync_timeline {
 	struct list_head	active_list_head;
 	spinlock_t		active_list_lock;
 
+#ifdef CONFIG_DEBUG_FS
 	struct list_head	sync_timeline_list;
+#endif
 };
 
 /**
@@ -167,17 +160,18 @@ struct sync_fence {
 	struct file		*file;
 	struct kref		kref;
 	char			name[32];
+#ifdef CONFIG_DEBUG_FS
+	struct list_head	sync_fence_list;
+#endif
+
+	wait_queue_head_t	wq;
+	int			status;
 
 	/* this list is immutable once the fence is created */
 	struct list_head	pt_list_head;
 
 	struct list_head	waiter_list_head;
 	spinlock_t		waiter_list_lock; /* also protects status */
-	int			status;
-
-	wait_queue_head_t	wq;
-
-	struct list_head	sync_fence_list;
 };
 
 struct sync_fence_waiter;
@@ -347,5 +341,23 @@ int sync_fence_cancel_async(struct sync_fence *fence,
  * if @timeout < 0
  */
 int sync_fence_wait(struct sync_fence *fence, long timeout);
+
+#ifdef CONFIG_DEBUG_FS
+
+extern void sync_timeline_debug_add(struct sync_timeline *obj);
+extern void sync_timeline_debug_remove(struct sync_timeline *obj);
+extern void sync_fence_debug_add(struct sync_fence *fence);
+extern void sync_fence_debug_remove(struct sync_fence *fence);
+extern void sync_dump(void);
+
+#else
+# define sync_timeline_debug_add(obj)
+# define sync_timeline_debug_remove(obj)
+# define sync_fence_debug_add(fence)
+# define sync_fence_debug_remove(fence)
+# define sync_dump()
+#endif
+int sync_fence_wake_up_wq(wait_queue_t *curr, unsigned mode,
+				 int wake_flags, void *key);
 
 #endif /* _LINUX_SYNC_H */

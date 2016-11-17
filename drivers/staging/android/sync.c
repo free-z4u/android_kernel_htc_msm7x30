@@ -34,7 +34,6 @@
 static void sync_fence_signal_pt(struct sync_pt *pt);
 static int _sync_pt_has_signaled(struct sync_pt *pt);
 static void sync_fence_free(struct kref *kref);
-static void sync_dump(void);
 
 static LIST_HEAD(sync_timeline_list_head);
 static DEFINE_SPINLOCK(sync_timeline_list_lock);
@@ -884,9 +883,6 @@ static void sync_print_pt(struct seq_file *s, struct sync_pt *pt, bool fence)
 						    sizeof(value));
 			seq_printf(s, " / %s", value);
 		}
-	} else if (pt->parent->ops->print_pt) {
-		seq_puts(s, ": ");
-		pt->parent->ops->print_pt(s, pt);
 	}
 
 	seq_puts(s, "\n");
@@ -904,9 +900,6 @@ static void sync_print_obj(struct seq_file *s, struct sync_timeline *obj)
 
 		obj->ops->timeline_value_str(obj, value, sizeof(value));
 		seq_printf(s, ": %s", value);
-	} else if (obj->ops->print_obj) {
-		seq_puts(s, ": ");
-		obj->ops->print_obj(s, obj);
 	}
 
 	seq_puts(s, "\n");
@@ -998,7 +991,7 @@ late_initcall(sync_debugfs_init);
 
 #define DUMP_CHUNK 256
 static char sync_dump_buf[64 * 1024];
-static void sync_dump(void)
+void sync_dump(void)
 {
 	struct seq_file s = {
 		.buf = sync_dump_buf,
