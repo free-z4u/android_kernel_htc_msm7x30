@@ -503,7 +503,7 @@ static int __init gannet_init(void)
 	struct net_device *dev;
 
 	dev = alloc_netdev_mq(sizeof(struct gannet_private),
-			   "gannet%d", gannet_setup, 1);
+			   "gannet%d", NET_NAME_UNKNOWN, gannet_setup, 1);
 	if (NULL == dev)
 		return -ENOMEM;
 
