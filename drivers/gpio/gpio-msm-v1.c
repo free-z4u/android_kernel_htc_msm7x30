@@ -24,6 +24,7 @@
 #include <linux/err.h>
 
 #include <mach/msm_gpiomux.h>
+#include <mach/gpio.h>
 #include "../../../arch/arm/mach-msm/proc_comm.h"
 #include "../../../arch/arm/mach-msm/smd_private.h"
 

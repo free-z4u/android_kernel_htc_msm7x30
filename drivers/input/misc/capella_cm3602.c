@@ -26,6 +26,7 @@
 #include <linux/uaccess.h>
 #include <linux/miscdevice.h>
 #include <linux/wakelock.h>
+#include <linux/interrupt.h>
 
 #define DPS(x...) printk(KERN_DEBUG "[PS][CM3602] " x)
 #define IPS(x...) printk(KERN_INFO "[PS][CM3602] " x)

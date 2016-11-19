@@ -29,6 +29,7 @@
 #include <asm/uaccess.h>
 #include <linux/module.h>
 #include "proc_comm.h"
+#include <linux/interrupt.h>
 
 
 #define I2C_READ_RETRY_TIMES			10

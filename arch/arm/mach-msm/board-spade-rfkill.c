@@ -20,6 +20,7 @@
 #include <linux/rfkill.h>
 #include <linux/gpio.h>
 #include <asm/mach-types.h>
+#include <mach/gpio.h>
 
 #include "board-spade.h"
 
