@@ -747,9 +747,9 @@ static int msm_new_mixer(struct snd_soc_codec *codec)
 	int err;
 	int dev_cnt;
 
-	strcpy(codec->card->snd_card->mixername, "MSM Mixer");
+	strcpy(codec->component.card->snd_card->mixername, "MSM Mixer");
 	for (idx = 0; idx < ARRAY_SIZE(snd_msm_controls); idx++) {
-		err = snd_ctl_add(codec->card->snd_card,
+		err = snd_ctl_add(codec->component.card->snd_card,
 			snd_ctl_new1(&snd_msm_controls[idx], NULL));
 		if (err < 0)
 			printk(KERN_ERR "ERR adding ctl\n");
@@ -758,7 +758,7 @@ static int msm_new_mixer(struct snd_soc_codec *codec)
 
 	for (idx = 0; idx < dev_cnt; idx++) {
 		if (!snd_dev_ctl_index(idx)) {
-			err = snd_ctl_add(codec->card->snd_card,
+			err = snd_ctl_add(codec->component.card->snd_card,
 				snd_ctl_new1(&snd_dev_controls[idx], NULL));
 			if (err < 0)
 				printk(KERN_ERR "ERR adding ctl\n");
