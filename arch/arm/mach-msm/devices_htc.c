@@ -345,7 +345,7 @@ static int panel_type = 0;
 
 void __init early_init_dt_setup_panel_type(unsigned long value) {
 	pr_info("[dt]panel_type = 0x%lx\n", value);
-	smi_sz = value;
+	panel_type = value;
 }
 
 unsigned int board_get_panel_type(void)
