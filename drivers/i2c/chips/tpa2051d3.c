@@ -517,12 +517,12 @@ static int tpa2051d3_remove(struct i2c_client *client)
 	return 0;
 }
 
-static int tpa2051d3_suspend(struct i2c_client *client, pm_message_t mesg)
+static int tpa2051d3_suspend(struct device *dev)
 {
 	return 0;
 }
 
-static int tpa2051d3_resume(struct i2c_client *client)
+static int tpa2051d3_resume(struct device *dev)
 {
 	return 0;
 }
@@ -532,14 +532,18 @@ static const struct i2c_device_id tpa2051d3_id[] = {
 	{ }
 };
 
+static const struct dev_pm_ops tpa2051d3_pm_ops = {
+	.suspend = tpa2051d3_suspend,
+	.resume = tpa2051d3_resume,
+};
+
 static struct i2c_driver tpa2051d3_driver = {
 	.probe = tpa2051d3_probe,
 	.remove = tpa2051d3_remove,
-	.suspend = tpa2051d3_suspend,
-	.resume = tpa2051d3_resume,
 	.id_table = tpa2051d3_id,
 	.driver = {
 		.name = TPA2051D3_I2C_NAME,
+		.pm	= &tpa2051d3_pm_ops,
 	},
 };
 

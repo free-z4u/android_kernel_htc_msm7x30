@@ -581,13 +581,12 @@ static int microp_i2c_remove(struct i2c_client *client)
 	return 0;
 }
 
-static int microp_i2c_suspend(struct i2c_client *client,
-	pm_message_t mesg)
+static int microp_i2c_suspend(struct device *dev)
 {
 	return 0;
 }
 
-static int microp_i2c_resume(struct i2c_client *client)
+static int microp_i2c_resume(struct device *dev)
 {
 	return 0;
 }
@@ -721,14 +720,18 @@ static const struct i2c_device_id microp_i2c_id[] = {
 	{ }
 };
 
+static const struct dev_pm_ops microp_i2c_pm_ops = {
+	.suspend = microp_i2c_suspend,
+	.resume = microp_i2c_resume,
+};
+
 static struct i2c_driver microp_i2c_driver = {
 	.driver = {
 		   .name = MICROP_I2C_NAME,
+		   .pm   = &microp_i2c_pm_ops,
 		   },
 	.id_table = microp_i2c_id,
 	.probe = microp_i2c_probe,
-	.suspend = microp_i2c_suspend,
-	.resume = microp_i2c_resume,
 	.remove = microp_i2c_remove,
 };
 

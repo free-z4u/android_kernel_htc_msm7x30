@@ -1472,10 +1472,15 @@ static int elan_ktf2k_ts_remove(struct i2c_client *client)
 	return 0;
 }
 
-static int elan_ktf2k_ts_suspend(struct i2c_client *client, pm_message_t mesg)
+static int elan_ktf2k_ts_suspend(struct device *dev)
 {
 	int rc = 0;
-	struct elan_ktf2k_ts_data *ts = i2c_get_clientdata(client);
+	struct elan_ktf2k_ts_data *ts;
+	struct i2c_client *client = i2c_verify_client(dev);
+	if (!client)
+		return 0;
+
+	ts = i2c_get_clientdata(client);
 
 	printk(KERN_INFO "%s: enter\n", __func__);
 
@@ -1497,10 +1502,15 @@ static int elan_ktf2k_ts_suspend(struct i2c_client *client, pm_message_t mesg)
 	return 0;
 }
 
-static int elan_ktf2k_ts_resume(struct i2c_client *client)
+static int elan_ktf2k_ts_resume(struct device *dev)
 {
-	struct elan_ktf2k_ts_data *ts = i2c_get_clientdata(client);
+	struct elan_ktf2k_ts_data *ts;
 	uint8_t touch = 0;
+	struct i2c_client *client = i2c_verify_client(dev);
+	if (!client)
+		return 0;
+
+	ts = i2c_get_clientdata(client);
 
 	printk(KERN_INFO "%s: enter\n", __func__);
 
@@ -1541,14 +1551,18 @@ static const struct i2c_device_id elan_ktf2k_ts_id[] = {
 	{ }
 };
 
+static const struct dev_pm_ops elan_ktf2k_pm_ops = {
+	.suspend	= elan_ktf2k_ts_suspend,
+	.resume		= elan_ktf2k_ts_resume,
+};
+
 static struct i2c_driver ektf2k_ts_driver = {
 	.probe		= elan_ktf2k_ts_probe,
 	.remove		= elan_ktf2k_ts_remove,
-	.suspend	= elan_ktf2k_ts_suspend,
-	.resume		= elan_ktf2k_ts_resume,
 	.id_table	= elan_ktf2k_ts_id,
 	.driver		= {
 		.name = ELAN_KTF2K_NAME,
+		.pm   = &elan_ktf2k_pm_ops,
 	},
 };
 

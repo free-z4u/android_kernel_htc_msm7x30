@@ -1167,29 +1167,34 @@ static int a1026_remove(struct i2c_client *client)
 	return 0;
 }
 
-static int a1026_suspend(struct i2c_client *client, pm_message_t mesg)
+static int a1026_suspend(struct device *dev)
 {
 	return 0;
 }
 
-static int a1026_resume(struct i2c_client *client)
+static int a1026_resume(struct device *dev)
 {
 	return 0;
 }
+
 
 static const struct i2c_device_id a1026_id[] = {
 	{ "audience_a1026", 0 },
 	{ }
 };
 
+static const struct dev_pm_ops a1026_pm_ops = {
+	.suspend = a1026_suspend,
+	.resume = a1026_resume,
+};
+
 static struct i2c_driver a1026_driver = {
 	.probe = a1026_probe,
 	.remove = a1026_remove,
-	.suspend = a1026_suspend,
-	.resume	= a1026_resume,
 	.id_table = a1026_id,
 	.driver = {
 		.name = "audience_a1026",
+		.pm   = &a1026_pm_ops,
 	},
 };
 

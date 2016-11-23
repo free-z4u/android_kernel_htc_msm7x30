@@ -1915,12 +1915,12 @@ fail_free_intr_pin:
 	return ret;
 }
 
-static int isl29028_suspend(struct i2c_client *client, pm_message_t mesg)
+static int isl29028_suspend(struct device *dev)
 {
 	return 0;
 }
 
-static int isl29028_resume(struct i2c_client *client)
+static int isl29028_resume(struct device *dev)
 {
 	struct isl29028_info *lpi = lp_info;
 	char buffer[2];
@@ -2165,14 +2165,18 @@ static const struct i2c_device_id isl29028_i2c_id[] = {
 	{}
 };
 
+static const struct dev_pm_ops isl29028_pm_ops = {
+	.suspend = isl29028_suspend,
+	.resume = isl29028_resume,
+};
+
 static struct i2c_driver isl29028_driver = {
 	.id_table = isl29028_i2c_id,
 	.probe = isl29028_probe,
-	.suspend = isl29028_suspend,
-	.resume = isl29028_resume,
 	.driver = {
 		.name = ISL29028_I2C_NAME,
 		.owner = THIS_MODULE,
+		.pm    = &isl29028_pm_ops,
 	},
 };
 

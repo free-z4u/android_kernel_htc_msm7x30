@@ -34,6 +34,7 @@ git checkout HEAD -- lib/lzo/lzo1x_decompress_safe.c
 # drivers/staging/android/trace/sync.h
 # include/linux/sync.h
 # drivers/base/platform.c
+# drivers/i2c/chips/isl29028.c -> use device tree, drivers/staging/iio/light/isl29028.c
 
 #!/bin/sh
 LIST=`git diff v3.15 --name-only | grep -v "\.h" | grep -v "Makefile" | grep -v "Kconfig" | sed 's|\.c|\.o|g'`

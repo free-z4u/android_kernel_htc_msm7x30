@@ -638,7 +638,7 @@ static irqreturn_t akm8975_interrupt(int irq, void *dev_id)
 	return IRQ_HANDLED;
 }
 
-static int akm8975_suspend(struct i2c_client *client, pm_message_t mesg)
+static int akm8975_suspend(struct device *dev)
 {
 	DIF("%s", __func__);
 
@@ -651,7 +651,7 @@ static int akm8975_suspend(struct i2c_client *client, pm_message_t mesg)
 	return 0;
 }
 
-static int akm8975_resume(struct i2c_client *client)
+static int akm8975_resume(struct device *dev)
 {
 	enable_irq(this_client->irq);
 	atomic_set(&suspend_flag, 0);
@@ -1002,14 +1002,18 @@ static const struct i2c_device_id akm8975_id[] = {
 	{ }
 };
 
+static const struct dev_pm_ops akm8975_pm_ops = {
+	.suspend = akm8975_suspend,
+	.resume = akm8975_resume,
+};
+
 static struct i2c_driver akm8975_driver = {
 	.probe 	= akm8975_probe,
 	.remove 	= akm8975_remove,
 	.id_table	= akm8975_id,
-	.suspend = akm8975_suspend,
-	.resume = akm8975_resume,
 	.driver = {
 		   .name = AKM8975_I2C_NAME,
+		   .pm   = &akm8975_pm_ops,
 		   },
 };
 
