@@ -165,7 +165,7 @@ struct sync_fence {
 #endif
 
 	wait_queue_head_t	wq;
-	int			status;
+	atomic_t		status;
 
 	/* this list is immutable once the fence is created */
 	struct list_head	pt_list_head;

@@ -45,7 +45,7 @@ TRACE_EVENT(sync_wait,
 
 	TP_fast_assign(
 			__assign_str(name, fence->name);
-			__entry->status = fence->status;
+			__entry->status = atomic_read(&fence->status);
 			__entry->begin = begin;
 	),
 

@@ -41,11 +41,22 @@ static DEFINE_SPINLOCK(sync_timeline_list_lock);
 static LIST_HEAD(sync_fence_list_head);
 static DEFINE_SPINLOCK(sync_fence_list_lock);
 
+void sync_timeline_debug_add(struct sync_timeline *obj)
+{
+	unsigned long flags;
+
+	INIT_LIST_HEAD(&obj->active_list_head);
+	spin_lock_init(&obj->active_list_lock);
+
+	spin_lock_irqsave(&sync_timeline_list_lock, flags);
+	list_add_tail(&obj->sync_timeline_list, &sync_timeline_list_head);
+	spin_unlock_irqrestore(&sync_timeline_list_lock, flags);
+}
+
 struct sync_timeline *sync_timeline_create(const struct sync_timeline_ops *ops,
 					   int size, const char *name)
 {
 	struct sync_timeline *obj;
-	unsigned long flags;
 
 	if (size < sizeof(struct sync_timeline))
 		return NULL;
@@ -61,31 +72,42 @@ struct sync_timeline *sync_timeline_create(const struct sync_timeline_ops *ops,
 	INIT_LIST_HEAD(&obj->child_list_head);
 	spin_lock_init(&obj->child_list_lock);
 
-	INIT_LIST_HEAD(&obj->active_list_head);
-	spin_lock_init(&obj->active_list_lock);
-
-	spin_lock_irqsave(&sync_timeline_list_lock, flags);
-	list_add_tail(&obj->sync_timeline_list, &sync_timeline_list_head);
-	spin_unlock_irqrestore(&sync_timeline_list_lock, flags);
+	sync_timeline_debug_add(obj);
 
 	return obj;
 }
 EXPORT_SYMBOL(sync_timeline_create);
 
-static void sync_timeline_free(struct kref *kref)
+void sync_timeline_debug_remove(struct sync_timeline *obj)
 {
-	struct sync_timeline *obj =
-		container_of(kref, struct sync_timeline, kref);
 	unsigned long flags;
 
 	spin_lock_irqsave(&sync_timeline_list_lock, flags);
 	list_del(&obj->sync_timeline_list);
 	spin_unlock_irqrestore(&sync_timeline_list_lock, flags);
+}
+
+static void sync_timeline_free(struct kref *kref)
+{
+	struct sync_timeline *obj =
+		container_of(kref, struct sync_timeline, kref);
+
+	sync_timeline_debug_remove(obj);
 
 	if (obj->ops->release_obj)
 		obj->ops->release_obj(obj);
 
 	kfree(obj);
+}
+
+static void sync_timeline_get(struct sync_timeline *obj)
+{
+	kref_get(&obj->kref);
+}
+
+static void sync_timeline_put(struct sync_timeline *obj)
+{
+	kref_put(&obj->kref, sync_timeline_free);
 }
 
 void sync_timeline_destroy(struct sync_timeline *obj)
@@ -101,8 +123,7 @@ void sync_timeline_destroy(struct sync_timeline *obj)
 	 * signal any children that their parent is going away.
 	 */
 	sync_timeline_signal(obj);
-
-	kref_put(&obj->kref, sync_timeline_free);
+	sync_timeline_put(obj);
 }
 EXPORT_SYMBOL(sync_timeline_destroy);
 
@@ -168,7 +189,7 @@ void sync_timeline_signal(struct sync_timeline *obj)
 }
 EXPORT_SYMBOL(sync_timeline_signal);
 
-struct sync_pt *sync_pt_create(struct sync_timeline *parent, int size)
+struct sync_pt *sync_pt_create(struct sync_timeline *obj, int size)
 {
 	struct sync_pt *pt;
 
@@ -180,8 +201,8 @@ struct sync_pt *sync_pt_create(struct sync_timeline *parent, int size)
 		return NULL;
 
 	INIT_LIST_HEAD(&pt->active_list);
-	kref_get(&parent->kref);
-	sync_timeline_add_pt(parent, pt);
+	sync_timeline_get(obj);
+	sync_timeline_add_pt(obj, pt);
 
 	return pt;
 }
@@ -510,11 +531,11 @@ static void sync_fence_signal_pt(struct sync_pt *pt)
 	 * this should protect against two threads racing on the signaled
 	 * false -> true transition
 	 */
-	if (status && !fence->status) {
+	if (status && !atomic_read(&fence->status)) {
 		list_for_each_safe(pos, n, &fence->waiter_list_head)
 			list_move(pos, &signaled_waiters);
 
-		fence->status = status;
+		atomic_set(&fence->status, status);
 	} else {
 		status = 0;
 	}
@@ -541,8 +562,8 @@ int sync_fence_wait_async(struct sync_fence *fence,
 
 	spin_lock_irqsave(&fence->waiter_list_lock, flags);
 
-	if (fence->status) {
-		err = fence->status;
+	err = atomic_read(&fence->status);
+	if (err) {
 		goto out;
 	}
 
@@ -583,16 +604,6 @@ int sync_fence_cancel_async(struct sync_fence *fence,
 }
 EXPORT_SYMBOL(sync_fence_cancel_async);
 
-static bool sync_fence_check(struct sync_fence *fence)
-{
-	/*
-	 * Make sure that reads to fence->status are ordered with the
-	 * wait queue event triggering
-	 */
-	smp_rmb();
-	return fence->status != 0;
-}
-
 int sync_fence_wait(struct sync_fence *fence, long timeout)
 {
 	int err = 0;
@@ -605,24 +616,25 @@ int sync_fence_wait(struct sync_fence *fence, long timeout)
 	if (timeout > 0) {
 		timeout = msecs_to_jiffies(timeout);
 		err = wait_event_interruptible_timeout(fence->wq,
-						       sync_fence_check(fence),
+						       atomic_read(&fence->status) != 0,
 						       timeout);
 	} else if (timeout < 0) {
 		err = wait_event_interruptible(fence->wq,
-					       sync_fence_check(fence));
+					       atomic_read(&fence->status) != 0);
 	}
 	trace_sync_wait(fence, 0);
 
 	if (err < 0)
 		return err;
 
-	if (fence->status < 0) {
-		pr_info("fence error %d on [%p]\n", fence->status, fence);
+	err = atomic_read(&fence->status);
+	if (err < 0) {
+		pr_info("fence error %d on [%p]\n", err, fence);
 		sync_dump();
-		return fence->status;
+		return err;
 	}
 
-	if (fence->status == 0) {
+	if (err == 0) {
 		if (timeout > 0) {
 			pr_info("fence timeout on [%p] after %dms\n", fence,
 				jiffies_to_msecs(timeout));
@@ -644,9 +656,8 @@ static void sync_fence_free(struct kref *kref)
 	kfree(fence);
 }
 
-static int sync_fence_release(struct inode *inode, struct file *file)
+void sync_fence_debug_remove(struct sync_fence *fence)
 {
-	struct sync_fence *fence = file->private_data;
 	unsigned long flags;
 
 	/*
@@ -664,27 +675,29 @@ static int sync_fence_release(struct inode *inode, struct file *file)
 	 * can't reference the fence.
 	 */
 	sync_fence_detach_pts(fence);
+}
+
+static int sync_fence_release(struct inode *inode, struct file *file)
+{
+	struct sync_fence *fence = file->private_data;
+
+	sync_fence_debug_remove(fence);
 
 	kref_put(&fence->kref, sync_fence_free);
-
 	return 0;
 }
 
 static unsigned int sync_fence_poll(struct file *file, poll_table *wait)
 {
 	struct sync_fence *fence = file->private_data;
+	int status;
 
 	poll_wait(file, &fence->wq, wait);
 
-	/*
-	 * Make sure that reads to fence->status are ordered with the
-	 * wait queue event triggering
-	 */
-	smp_rmb();
-
-	if (fence->status == 1)
+	status = atomic_read(&fence->status);
+	if (status == 1)
 		return POLLIN;
-	else if (fence->status < 0)
+	else if (status < 0)
 		return POLLERR;
 	return 0;
 }
@@ -799,7 +812,7 @@ static long sync_fence_ioctl_fence_info(struct sync_fence *fence,
 		return -ENOMEM;
 
 	strlcpy(data->name, fence->name, sizeof(data->name));
-	data->status = fence->status;
+	data->status = atomic_read(&fence->status);
 	len = sizeof(struct sync_fence_info_data);
 
 	list_for_each(pos, &fence->pt_list_head) {
@@ -831,7 +844,6 @@ static long sync_fence_ioctl(struct file *file, unsigned int cmd,
 			     unsigned long arg)
 {
 	struct sync_fence *fence = file->private_data;
-
 	switch (cmd) {
 	case SYNC_IOC_WAIT:
 		return sync_fence_ioctl_wait(fence, arg);
@@ -919,7 +931,7 @@ static void sync_print_fence(struct seq_file *s, struct sync_fence *fence)
 	unsigned long flags;
 
 	seq_printf(s, "[%p] %s: %s\n", fence, fence->name,
-		   sync_status_str(fence->status));
+		   sync_status_str(atomic_read(&fence->status)));
 
 	list_for_each(pos, &fence->pt_list_head) {
 		struct sync_pt *pt =
