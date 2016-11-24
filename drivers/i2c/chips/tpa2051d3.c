@@ -464,6 +464,8 @@ int tpa2051d3_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
 	int ret = 0;
 
+	mutex_init(&spk_amp_lock);
+
 	pdata = client->dev.platform_data;
 
 	if (pdata == NULL) {
@@ -547,20 +549,7 @@ static struct i2c_driver tpa2051d3_driver = {
 	},
 };
 
-static int __init tpa2051d3_init(void)
-{
-	pr_info("%s\n", __func__);
-	mutex_init(&spk_amp_lock);
-	return i2c_add_driver(&tpa2051d3_driver);
-}
-
-static void __exit tpa2051d3_exit(void)
-{
-	i2c_del_driver(&tpa2051d3_driver);
-}
-
-module_init(tpa2051d3_init);
-module_exit(tpa2051d3_exit);
+module_i2c_driver(tpa2051d3_driver);
 
 MODULE_DESCRIPTION("tpa2051d3 Speaker Amp driver");
 MODULE_LICENSE("GPL");

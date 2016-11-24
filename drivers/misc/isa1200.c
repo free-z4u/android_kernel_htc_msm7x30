@@ -601,18 +601,7 @@ static struct i2c_driver isa1200_driver = {
 	.id_table	= isa1200_id,
 };
 
-static int __init isa1200_init(void)
-{
-	return i2c_add_driver(&isa1200_driver);
-}
-
-static void __exit isa1200_exit(void)
-{
-	i2c_del_driver(&isa1200_driver);
-}
-
-module_init(isa1200_init);
-module_exit(isa1200_exit);
+module_i2c_driver(isa1200_driver);
 
 MODULE_AUTHOR("Kyungmin Park <kyungmin.park@samsung.com>");
 MODULE_DESCRIPTION("ISA1200 Haptic Motor driver");

@@ -2170,6 +2170,12 @@ static const struct dev_pm_ops isl29028_pm_ops = {
 	.resume = isl29028_resume,
 };
 
+static const struct of_device_id isl29028_of_match[] = {
+	{ .compatible = "isil,isl29028", },
+	{ },
+};
+MODULE_DEVICE_TABLE(of, isl29028_of_match);
+
 static struct i2c_driver isl29028_driver = {
 	.id_table = isl29028_i2c_id,
 	.probe = isl29028_probe,
@@ -2177,21 +2183,11 @@ static struct i2c_driver isl29028_driver = {
 		.name = ISL29028_I2C_NAME,
 		.owner = THIS_MODULE,
 		.pm    = &isl29028_pm_ops,
+		.of_match_table = isl29028_of_match,
 	},
 };
 
-static int __init isl29028_init(void)
-{
-	return i2c_add_driver(&isl29028_driver);
-}
-
-static void __exit isl29028_exit(void)
-{
-	i2c_del_driver(&isl29028_driver);
-}
-
-module_init(isl29028_init);
-module_exit(isl29028_exit);
+module_i2c_driver(isl29028_driver);
 
 MODULE_DESCRIPTION("ISL29028 Driver");
 MODULE_LICENSE("GPL");

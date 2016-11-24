@@ -1566,20 +1566,7 @@ static struct i2c_driver ektf2k_ts_driver = {
 	},
 };
 
-static int elan_ktf2k_ts_init(void)
-{
-	printk(KERN_INFO "%s\n", __func__);
-	return i2c_add_driver(&ektf2k_ts_driver);
-}
-
-static void __exit elan_ktf2k_ts_exit(void)
-{
-	i2c_del_driver(&ektf2k_ts_driver);
-	return;
-}
-
-module_init(elan_ktf2k_ts_init);
-module_exit(elan_ktf2k_ts_exit);
+module_i2c_driver(ektf2k_ts_driver);
 
 MODULE_DESCRIPTION("ELAN KTF2000 Touchscreen Driver");
 MODULE_LICENSE("GPL");

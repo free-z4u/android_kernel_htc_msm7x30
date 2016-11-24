@@ -1252,18 +1252,7 @@ static struct i2c_driver synaptics_ts_driver = {
 	},
 };
 
-static int synaptics_ts_init(void)
-{
-	return i2c_add_driver(&synaptics_ts_driver);
-}
-
-static void __exit synaptics_ts_exit(void)
-{
-	i2c_del_driver(&synaptics_ts_driver);
-}
-
-module_init(synaptics_ts_init);
-module_exit(synaptics_ts_exit);
+module_i2c_driver(synaptics_ts_driver);
 
 MODULE_DESCRIPTION("Synaptics Touchscreen Driver");
 MODULE_LICENSE("GPL");

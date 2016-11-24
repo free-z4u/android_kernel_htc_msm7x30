@@ -2996,19 +2996,7 @@ static struct i2c_driver atmel_ts_driver = {
 	},
 };
 
-static int atmel_ts_init(void)
-{
-	printk(KERN_INFO "atmel_ts_init():\n");
-	return i2c_add_driver(&atmel_ts_driver);
-}
-
-static void __exit atmel_ts_exit(void)
-{
-	i2c_del_driver(&atmel_ts_driver);
-}
-
-module_init(atmel_ts_init);
-module_exit(atmel_ts_exit);
+module_i2c_driver(atmel_ts_driver);
 
 MODULE_DESCRIPTION("ATMEL Touch driver");
 MODULE_LICENSE("GPL");

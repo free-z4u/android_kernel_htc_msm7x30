@@ -1017,19 +1017,7 @@ static struct i2c_driver akm8975_driver = {
 		   },
 };
 
-static int __init akm8975_init(void)
-{
-	I("AKM8975 compass driver: init\n");
-	return i2c_add_driver(&akm8975_driver);
-}
-
-static void __exit akm8975_exit(void)
-{
-	i2c_del_driver(&akm8975_driver);
-}
-
-module_init(akm8975_init);
-module_exit(akm8975_exit);
+module_i2c_driver(akm8975_driver);
 
 MODULE_DESCRIPTION("AKM8975 compass driver");
 MODULE_LICENSE("GPL");

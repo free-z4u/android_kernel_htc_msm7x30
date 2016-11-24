@@ -1063,6 +1063,8 @@ static int a1026_probe(
 {
 	int rc = 0;
 
+	mutex_init(&a1026_lock);
+
 	pdata = client->dev.platform_data;
 
 	if (pdata == NULL) {
@@ -1198,21 +1200,7 @@ static struct i2c_driver a1026_driver = {
 	},
 };
 
-static int __init a1026_init(void)
-{
-	pr_info("%s\n", __func__);
-	mutex_init(&a1026_lock);
-
-	return i2c_add_driver(&a1026_driver);
-}
-
-static void __exit a1026_exit(void)
-{
-	i2c_del_driver(&a1026_driver);
-}
-
-module_init(a1026_init);
-module_exit(a1026_exit);
+module_i2c_driver(a1026_driver);
 
 MODULE_DESCRIPTION("A1026 voice processor driver");
 MODULE_LICENSE("GPL");
