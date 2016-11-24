@@ -52,7 +52,7 @@ static struct alarm tps65200_check_alarm;
 static struct work_struct check_alarm_work;
 
 static int chg_stat_int;
-static unsigned int chg_stat_enabled;
+static unsigned int chg_stat_enabled = 0;
 static spinlock_t chg_stat_lock;
 
 static struct tps65200_chg_int_data *chg_int_data;
@@ -60,7 +60,7 @@ static LIST_HEAD(tps65200_chg_int_list);
 static DEFINE_MUTEX(notify_lock);
 
 static int tps65200_initial = -1;
-static int tps65200_low_chg;
+static int tps65200_low_chg = 0;
 static int tps65200_vdpm_chg = 0;
 
 #ifdef CONFIG_SUPPORT_DQ_BATTERY
@@ -706,6 +706,10 @@ static int tps65200_probe(struct i2c_client *client,
 					client->dev.platform_data;
 	pr_tps_info("%s\n",__func__);
 
+	tps65200_low_chg = 0;
+	chg_stat_enabled = 0;
+	spin_lock_init(&chg_stat_lock);
+
 	if (i2c_check_functionality(client->adapter, I2C_FUNC_I2C) == 0) {
 		pr_tps_err("I2C fail\n");
 		return -EIO;
@@ -799,6 +803,7 @@ static int tps65200_remove(struct i2c_client *client)
 	tps65200_i2c_module.client = NULL;
 	if (tps65200_wq)
 		destroy_workqueue(tps65200_wq);
+	kfree(chg_int_data);
 	return 0;
 }
 
@@ -825,29 +830,8 @@ static struct i2c_driver tps65200_driver = {
 	.shutdown   = tps65200_shutdown,
 };
 
-static int __init sensors_tps65200_init(void)
-{
-	int res;
-
-	tps65200_low_chg = 0;
-	chg_stat_enabled = 0;
-	spin_lock_init(&chg_stat_lock);
-	res = i2c_add_driver(&tps65200_driver);
-	if (res)
-		pr_tps_err("[TPS65200]: Driver registration failed \n");
-
-	return res;
-}
-
-static void __exit sensors_tps65200_exit(void)
-{
-	kfree(chg_int_data);
-	i2c_del_driver(&tps65200_driver);
-}
+module_i2c_driver(tps65200_driver);
 
 MODULE_AUTHOR("Josh Hsiao <Josh_Hsiao@htc.com>");
 MODULE_DESCRIPTION("tps65200 driver");
 MODULE_LICENSE("GPL");
-
-fs_initcall(sensors_tps65200_init);
-module_exit(sensors_tps65200_exit);
