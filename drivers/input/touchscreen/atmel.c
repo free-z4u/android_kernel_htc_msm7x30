@@ -2795,9 +2795,14 @@ static int atmel_ts_remove(struct i2c_client *client)
 	return 0;
 }
 
-static int atmel_ts_suspend(struct i2c_client *client, pm_message_t mesg)
+static int atmel_ts_suspend(struct device *dev)
 {
-	struct atmel_ts_data *ts = i2c_get_clientdata(client);
+	struct atmel_ts_data *ts;
+	struct i2c_client *client = i2c_verify_client(dev);
+	if (!client)
+		return 0;
+
+	ts = i2c_get_clientdata(client);
 	if (ts->debug_log_level > 0)
 		printk(KERN_INFO "%s:[TP]enter\n", __func__);
 
@@ -2853,9 +2858,14 @@ static int atmel_ts_suspend(struct i2c_client *client, pm_message_t mesg)
 	return 0;
 }
 
-static int atmel_ts_resume(struct i2c_client *client)
+static int atmel_ts_resume(struct device *dev)
 {
-	struct atmel_ts_data *ts = i2c_get_clientdata(client);
+	struct atmel_ts_data *ts;
+	struct i2c_client *client = i2c_verify_client(dev);
+	if (!client)
+		return 0;
+
+	ts = i2c_get_clientdata(client);
 	if (ts->debug_log_level > 0)
 		printk(KERN_INFO "%s:[TP]enter\n", __func__);
 
@@ -2971,30 +2981,22 @@ static const struct i2c_device_id atml_ts_i2c_id[] = {
 	{ }
 };
 
+static const struct dev_pm_ops atmel_ts_pm_ops = {
+	.suspend = atmel_ts_suspend,
+	.resume = atmel_ts_resume,
+};
+
 static struct i2c_driver atmel_ts_driver = {
 	.id_table = atml_ts_i2c_id,
 	.probe = atmel_ts_probe,
 	.remove = atmel_ts_remove,
-	.suspend = atmel_ts_suspend,
-	.resume = atmel_ts_resume,
 	.driver = {
-			.name = ATMEL_QT602240_NAME,
+		.name = ATMEL_QT602240_NAME,
+		.pm   = &atmel_ts_pm_ops,
 	},
 };
 
-static int atmel_ts_init(void)
-{
-	printk(KERN_INFO "atmel_ts_init():\n");
-	return i2c_add_driver(&atmel_ts_driver);
-}
-
-static void __exit atmel_ts_exit(void)
-{
-	i2c_del_driver(&atmel_ts_driver);
-}
-
-module_init(atmel_ts_init);
-module_exit(atmel_ts_exit);
+module_i2c_driver(atmel_ts_driver);
 
 MODULE_DESCRIPTION("ATMEL Touch driver");
 MODULE_LICENSE("GPL");

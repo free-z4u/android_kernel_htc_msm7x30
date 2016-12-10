@@ -518,10 +518,15 @@ static int isa1200_remove(struct i2c_client *client)
 }
 
 #ifdef CONFIG_PM
-static int isa1200_suspend(struct i2c_client *client, pm_message_t mesg)
+static int isa1200_suspend(struct device *dev)
 {
-	struct isa1200_chip *haptic = i2c_get_clientdata(client);
 	int ret;
+	struct isa1200_chip *haptic;
+	struct i2c_client *client = i2c_verify_client(dev);
+	if (!client)
+		return 0;
+
+	haptic = i2c_get_clientdata(client);
 
 	hrtimer_cancel(&haptic->timer);
 	cancel_work_sync(&haptic->work);
@@ -546,10 +551,15 @@ static int isa1200_suspend(struct i2c_client *client, pm_message_t mesg)
 	return 0;
 }
 
-static int isa1200_resume(struct i2c_client *client)
+static int isa1200_resume(struct device *dev)
 {
-	struct isa1200_chip *haptic = i2c_get_clientdata(client);
 	int ret;
+	struct isa1200_chip *haptic;
+	struct i2c_client *client = i2c_verify_client(dev);
+	if (!client)
+		return 0;
+
+	haptic = i2c_get_clientdata(client);
 
 	if (haptic->pdata->regulator_info)
 		isa1200_reg_power(haptic, true);
@@ -576,29 +586,22 @@ static const struct i2c_device_id isa1200_id[] = {
 };
 MODULE_DEVICE_TABLE(i2c, isa1200_id);
 
+static const struct dev_pm_ops isa1200_pm_ops = {
+	.suspend	= isa1200_suspend,
+	.resume		= isa1200_resume,
+};
+
 static struct i2c_driver isa1200_driver = {
 	.driver	= {
 		.name	= "isa1200",
+		.pm	= &isa1200_pm_ops,
 	},
 	.probe		= isa1200_probe,
 	.remove		= isa1200_remove,
-	.suspend	= isa1200_suspend,
-	.resume		= isa1200_resume,
 	.id_table	= isa1200_id,
 };
 
-static int __init isa1200_init(void)
-{
-	return i2c_add_driver(&isa1200_driver);
-}
-
-static void __exit isa1200_exit(void)
-{
-	i2c_del_driver(&isa1200_driver);
-}
-
-module_init(isa1200_init);
-module_exit(isa1200_exit);
+module_i2c_driver(isa1200_driver);
 
 MODULE_AUTHOR("Kyungmin Park <kyungmin.park@samsung.com>");
 MODULE_DESCRIPTION("ISA1200 Haptic Motor driver");

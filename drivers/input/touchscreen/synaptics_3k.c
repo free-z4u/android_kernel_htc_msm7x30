@@ -1105,10 +1105,15 @@ static int synaptics_ts_remove(struct i2c_client *client)
 	return 0;
 }
 
-static int synaptics_ts_suspend(struct i2c_client *client, pm_message_t mesg)
+static int synaptics_ts_suspend(struct device *dev)
 {
 	int ret;
-	struct synaptics_ts_data *ts = i2c_get_clientdata(client);
+	struct synaptics_ts_data *ts;
+	struct i2c_client *client = i2c_verify_client(dev);
+	if (!client)
+		return 0;
+
+	ts = i2c_get_clientdata(client);
 	if (ts->debug_log_level > 0)
 		printk(KERN_INFO "[TP] %s: enter\n", __func__);
 
@@ -1156,10 +1161,15 @@ static int synaptics_ts_suspend(struct i2c_client *client, pm_message_t mesg)
 	return 0;
 }
 
-static int synaptics_ts_resume(struct i2c_client *client)
+static int synaptics_ts_resume(struct device *dev)
 {
 	int ret;
-	struct synaptics_ts_data *ts = i2c_get_clientdata(client);
+	struct synaptics_ts_data *ts;
+	struct i2c_client *client = i2c_verify_client(dev);
+	if (!client)
+		return 0;
+
+	ts = i2c_get_clientdata(client);
 	if (ts->debug_log_level > 0)
 		printk(KERN_INFO "[TP] %s: enter\n", __func__);
 
@@ -1227,29 +1237,22 @@ static const struct i2c_device_id synaptics_ts_id[] = {
 	{ }
 };
 
+static const struct dev_pm_ops synaptics_ts_pm_ops = {
+	.suspend = synaptics_ts_suspend,
+	.resume = synaptics_ts_resume,
+};
+
 static struct i2c_driver synaptics_ts_driver = {
 	.probe		= synaptics_ts_probe,
 	.remove		= synaptics_ts_remove,
-	.suspend	= synaptics_ts_suspend,
-	.resume		= synaptics_ts_resume,
 	.id_table	= synaptics_ts_id,
 	.driver = {
 		.name	= SYNAPTICS_3K_NAME,
+		.pm	= &synaptics_ts_pm_ops,
 	},
 };
 
-static int synaptics_ts_init(void)
-{
-	return i2c_add_driver(&synaptics_ts_driver);
-}
-
-static void __exit synaptics_ts_exit(void)
-{
-	i2c_del_driver(&synaptics_ts_driver);
-}
-
-module_init(synaptics_ts_init);
-module_exit(synaptics_ts_exit);
+module_i2c_driver(synaptics_ts_driver);
 
 MODULE_DESCRIPTION("Synaptics Touchscreen Driver");
 MODULE_LICENSE("GPL");

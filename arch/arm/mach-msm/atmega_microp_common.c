@@ -580,13 +580,12 @@ static int microp_i2c_remove(struct i2c_client *client)
 	return 0;
 }
 
-static int microp_i2c_suspend(struct i2c_client *client,
-	pm_message_t mesg)
+static int microp_i2c_suspend(struct device *dev)
 {
 	return 0;
 }
 
-static int microp_i2c_resume(struct i2c_client *client)
+static int microp_i2c_resume(struct device *dev)
 {
 	return 0;
 }
@@ -600,6 +599,35 @@ static void register_microp_devices(struct platform_device *devices, int num)
 	}
 }
 
+static void microp_irq_ack(struct irq_data *d)
+{
+	;
+}
+
+static void microp_irq_mask(struct irq_data *d)
+{
+	;
+}
+
+static void microp_irq_unmask(struct irq_data *d)
+{
+	;
+}
+
+static int microp_irq_set_wake(struct irq_data *d, unsigned int on)
+{
+	return 0;
+}
+
+static struct irq_chip microp_irq_chip = {
+	.name = "microp",
+	.irq_ack = microp_irq_ack,
+	.irq_mask = microp_irq_mask,
+	.irq_unmask = microp_irq_unmask,
+	.irq_set_wake = microp_irq_set_wake,
+        //	.disable = microp_irq_mask,
+};
+
 static int microp_i2c_probe(struct i2c_client *client
 	, const struct i2c_device_id *id)
 {
@@ -607,6 +635,14 @@ static int microp_i2c_probe(struct i2c_client *client
 	struct microp_i2c_client_data *cdata;
 	uint8_t data[6];
 	int ret;
+
+	int n, MICROP_IRQ_END = FIRST_MICROP_IRQ + NR_MICROP_IRQS;
+
+	for (n = FIRST_MICROP_IRQ; n < MICROP_IRQ_END; n++) {
+          irq_set_chip(n, &microp_irq_chip);
+		irq_set_handler(n, handle_level_irq);
+		set_irq_flags(n, IRQF_VALID);
+	}
 
 	cdata = kzalloc(sizeof(struct microp_i2c_client_data), GFP_KERNEL);
 	if (!cdata) {
@@ -720,70 +756,22 @@ static const struct i2c_device_id microp_i2c_id[] = {
 	{ }
 };
 
+static const struct dev_pm_ops microp_i2c_pm_ops = {
+	.suspend = microp_i2c_suspend,
+	.resume = microp_i2c_resume,
+};
+
 static struct i2c_driver microp_i2c_driver = {
 	.driver = {
 		   .name = MICROP_I2C_NAME,
+		   .pm   = &microp_i2c_pm_ops,
 		   },
 	.id_table = microp_i2c_id,
 	.probe = microp_i2c_probe,
-	.suspend = microp_i2c_suspend,
-	.resume = microp_i2c_resume,
 	.remove = microp_i2c_remove,
 };
 
-static void microp_irq_ack(struct irq_data *d)
-{
-	;
-}
-
-static void microp_irq_mask(struct irq_data *d)
-{
-	;
-}
-
-static void microp_irq_unmask(struct irq_data *d)
-{
-	;
-}
-
-static int microp_irq_set_wake(struct irq_data *d, unsigned int on)
-{
-	return 0;
-}
-
-static struct irq_chip microp_irq_chip = {
-	.name = "microp",
-	.irq_ack = microp_irq_ack,
-	.irq_mask = microp_irq_mask,
-	.irq_unmask = microp_irq_unmask,
-	.irq_set_wake = microp_irq_set_wake,
-        //	.disable = microp_irq_mask,
-};
-
-static int __init microp_common_init(void)
-{
-	int ret;
-	int n, MICROP_IRQ_END = FIRST_MICROP_IRQ + NR_MICROP_IRQS;
-
-	for (n = FIRST_MICROP_IRQ; n < MICROP_IRQ_END; n++) {
-          irq_set_chip(n, &microp_irq_chip);
-		irq_set_handler(n, handle_level_irq);
-		set_irq_flags(n, IRQF_VALID);
-	}
-
-	ret = i2c_add_driver(&microp_i2c_driver);
-	if (ret)
-		return ret;
-	return 0;
-}
-
-static void __exit microp_common_exit(void)
-{
-	i2c_del_driver(&microp_i2c_driver);
-}
-
-module_init(microp_common_init);
-module_exit(microp_common_exit);
+module_i2c_driver(microp_i2c_driver);
 
 MODULE_AUTHOR("Eric Huang <Eric.SP_Huang@htc.com>");
 MODULE_DESCRIPTION("Atmega MicroP driver");
