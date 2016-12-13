@@ -2414,7 +2414,7 @@ dhd_open(struct net_device *net)
 	if (ifidx == 0) {
 		atomic_set(&dhd->pend_8021x_cnt, 0);
 #if defined(WL_CFG80211)
-		DHD_ERROR(("\n%s\n", dhd_version));
+		DHD_ERROR(("%s\n", dhd_version));
 		if (!dhd_download_fw_on_driverload) {
 			ret = wl_android_wifi_on(net);
 			if (ret != 0) {
@@ -3892,7 +3892,7 @@ dhd_module_init(void)
 	error = dhd_bus_register();
 
 	if (!error)
-		printf("\n%s\n", dhd_version);
+		printf("%s\n", dhd_version);
 	else {
 		DHD_ERROR(("%s: sdio_register_driver failed\n", __FUNCTION__));
 		goto fail_1;

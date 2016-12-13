@@ -15,6 +15,8 @@
  *
  */
 
+#define pr_fmt(fmt) "SMD: " fmt
+
 /* TODO: handle cases where smd_write() will tempfail due to full fifo */
 /* TODO: thread priority? schedule a work to bump it? */
 /* TODO: maybe make server_list_lock a mutex */
@@ -68,12 +70,10 @@ static int smd_rpcrouter_debug_mask;
 module_param_named(debug_mask, smd_rpcrouter_debug_mask,
 		   int, S_IRUGO | S_IWUSR | S_IWGRP);
 
-#define DIAG(x...) printk(KERN_ERR "[K][SMD][RR] ERROR " x)
-
 #if defined(CONFIG_MSM_ONCRPCROUTER_DEBUG)
 #define D(x...) do { \
 if (smd_rpcrouter_debug_mask & RTR_DBG) \
-	printk(KERN_DEBUG "[K][SMD] "x); \
+	pr_info(" "x); \
 } while (0)
 
 #define RR(x...) do { \
@@ -83,40 +83,40 @@ if (smd_rpcrouter_debug_mask & R2R_MSG) \
 
 #define RAW(x...) do { \
 if (smd_rpcrouter_debug_mask & R2R_RAW) \
-	printk(KERN_DEBUG "[K][SMD][RAW] "x); \
+	pr_info("[RAW] "x); \
 } while (0)
 
 #define RAW_HDR(x...) do { \
 if (smd_rpcrouter_debug_mask & R2R_RAW_HDR) \
-	printk(KERN_DEBUG "[K][SMD][HDR] "x); \
+	pr_info("[HDR] "x); \
 } while (0)
 
 #define RAW_PMR(x...) do { \
 if (smd_rpcrouter_debug_mask & RAW_PMR) \
-	printk(KERN_DEBUG "[K][SMD][PMR] "x); \
+	pr_info("[PMR] "x); \
 } while (0)
 
 #define RAW_PMR_NOMASK(x...) do { \
-	printk(KERN_DEBUG "[K][SMD][PMR] "x); \
+	pr_info("[PMR] "x); \
 } while (0)
 
 #define RAW_PMW(x...) do { \
 if (smd_rpcrouter_debug_mask & RAW_PMW) \
-	printk(KERN_DEBUG "[K][SMD][PMW] "x); \
+	pr_info("[PMW] "x); \
 } while (0)
 
 #define RAW_PMW_NOMASK(x...) do { \
-	printk(KERN_DEBUG "[K][SMD][PMW] "x); \
+	pr_info("[PMW] "x); \
 } while (0)
 
 #define IO(x...) do { \
 if (smd_rpcrouter_debug_mask & RPC_MSG) \
-	printk(KERN_DEBUG "[K][SMD][RPC] "x); \
+	pr_info("[RPC] "x); \
 } while (0)
 
 #define NTFY(x...) do { \
 if (smd_rpcrouter_debug_mask & NTFY_MSG) \
-	printk(KERN_DEBUG "[K][SMD][NOTIFY] "x); \
+	pr_info("[NOTIFY] "x); \
 } while (0)
 #else
 #define D(x...) do { } while (0)
@@ -995,11 +995,11 @@ static void do_read_data(struct work_struct *work)
 	    hdr.confirm_rx, hdr.size, hdr.dst_pid, hdr.dst_cid);
 
 	if (hdr.version != RPCROUTER_VERSION) {
-		DIAG("version %d != %d\n", hdr.version, RPCROUTER_VERSION);
+		pr_err("version %d != %d\n", hdr.version, RPCROUTER_VERSION);
 		goto fail_data;
 	}
 	if (hdr.size > RPCROUTER_MSGSIZE_MAX) {
-		DIAG("msg size %d > max %d\n", hdr.size, RPCROUTER_MSGSIZE_MAX);
+		pr_err("msg size %d > max %d\n", hdr.size, RPCROUTER_MSGSIZE_MAX);
 		goto fail_data;
 	}
 
@@ -1015,7 +1015,7 @@ static void do_read_data(struct work_struct *work)
 	}
 
 	if (hdr.size < sizeof(pm)) {
-		DIAG("runt packet (no pacmark)\n");
+		pr_err("runt packet (no pacmark)\n");
 		goto fail_data;
 	}
 	if (rr_read(xprt_info, &pm, sizeof(pm)))
@@ -1068,7 +1068,7 @@ static void do_read_data(struct work_struct *work)
 
 	ept = rpcrouter_lookup_local_endpoint(hdr.dst_cid);
 	if (!ept) {
-		DIAG("no local ept for cid %08x\n", hdr.dst_cid);
+		pr_err("no local ept for cid %08x\n", hdr.dst_cid);
 		kfree(frag);
 		goto done;
 	}
@@ -2356,7 +2356,7 @@ static int __init rpcrouter_init(void)
 		smd_rpcrouter_debug_mask |= (R2R_RAW_HDR | RAW_PMR | RAW_PMW);
 	if (get_kernel_flag() & BIT(11))
 		smd_rpcrouter_debug_mask |= RPC_MSG;
-	pr_info("[K] %s(): get smd_rpcrouter_debug_mask=0x%x\n", __func__, smd_rpcrouter_debug_mask);
+	pr_info("get smd_rpcrouter_debug_mask=0x%x\n", smd_rpcrouter_debug_mask);
 
 	debugfs_init();
 
