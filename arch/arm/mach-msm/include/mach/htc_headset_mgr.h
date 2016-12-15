@@ -35,25 +35,9 @@
 #define set_irq_wake(irq, on) set_irq_wake(irq, on)
 #endif
 
-#define HS_ERR(fmt, arg...) \
-	printk(KERN_INFO "[" DRIVER_NAME "_ERR] (%s) " fmt "\n", \
-		__func__, ## arg)
-#define HS_LOG(fmt, arg...) \
-	printk(KERN_INFO "[" DRIVER_NAME "] (%s) " fmt "\n", __func__, ## arg)
-#define HS_LOG_TIME(fmt, arg...) do { \
-	struct timespec ts; \
-	struct rtc_time tm; \
-	getnstimeofday(&ts); \
-	rtc_time_to_tm(ts.tv_sec, &tm); \
-	printk(KERN_INFO "[" DRIVER_NAME "] (%s) " fmt \
-		" (%02d-%02d %02d:%02d:%02d.%03lu)\n", __func__, \
-		## arg, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, \
-		tm.tm_min, tm.tm_sec, ts.tv_nsec / 1000000); \
-	} while (0)
 #define HS_DBG(fmt, arg...) \
 	if (hs_debug_log_state()) {  \
-		printk(KERN_INFO "##### [" DRIVER_NAME "] (%s) " fmt "\n", \
-		       __func__, ## arg); \
+		pr_info(" (%s) " fmt "\n", __func__, ## arg); \
 	}
 
 #define DEVICE_ACCESSORY_ATTR(_name, _mode, _show, _store) \

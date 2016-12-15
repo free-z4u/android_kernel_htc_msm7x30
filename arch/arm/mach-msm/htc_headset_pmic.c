@@ -17,6 +17,8 @@
  *
  */
 
+#define pr_fmt(fmt) "hs_pmic: " fmt
+
 #include <linux/gpio.h>
 #include <linux/interrupt.h>
 #include <linux/irq.h>
@@ -31,8 +33,6 @@
 
 #include <mach/htc_headset_mgr.h>
 #include <mach/htc_headset_pmic.h>
-
-#define DRIVER_NAME "HS_PMIC"
 
 static struct workqueue_struct *detect_wq;
 static void detect_pmic_work_func(struct work_struct *work);
@@ -112,17 +112,17 @@ static int hs_pmic_remote_threshold(uint32_t adc)
 				 HS_RPC_TIMEOUT);
 
 	if (ret < 0) {
-		HS_ERR("Failed to send remote threshold RPC");
+		pr_info("Failed to send remote threshold RPC\n");
 		return 0;
 	} else {
 		status = be32_to_cpu(rep.status);
 		if (status != HS_PMIC_RPC_ERR_SUCCESS) {
-			HS_ERR("Failed to set remote threshold");
+			pr_info("Failed to set remote threshold\n");
 			return 0;
 		}
 	}
 
-	HS_LOG("Set remote threshold (%u, %u, %u)", hi->pdata.hs_controller,
+	pr_info("Set remote threshold (%u, %u, %u)\n", hi->pdata.hs_controller,
 	       hi->pdata.hs_switch, be32_to_cpu(req.current_uA));
 
 	return 1;
@@ -143,12 +143,12 @@ static int hs_pmic_remote_adc(int *adc)
 				 HS_RPC_TIMEOUT);
 	if (ret < 0) {
 		*adc = -1;
-		HS_LOG("Failed to read remote ADC");
+		pr_info("Failed to read remote ADC\n");
 		return 0;
 	}
 
 	*adc = (int) be32_to_cpu(rep.adc);
-	HS_LOG("Remote ADC %d (0x%X)", *adc, *adc);
+	pr_info("Remote ADC %d (0x%X)\n", *adc, *adc);
 
 	return 1;
 }
@@ -202,9 +202,9 @@ static int hs_pmic_adc_to_keycode(int adc)
 		key_code = HS_MGR_KEY_NONE;
 
 	if (key_code != HS_MGR_KEY_INVALID)
-		HS_LOG("Key code %d", key_code);
+		pr_info("Key code %d\n", key_code);
 	else
-		HS_LOG("Unknown key code %d", key_code);
+		pr_info("Unknown key code %d\n", key_code);
 
 	return key_code;
 }
@@ -288,14 +288,14 @@ static void irq_init_work_func(struct work_struct *work)
 		irq_type = IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING;
 
 	if (hi->pdata.hpin_gpio) {
-		HS_LOG("Enable detect IRQ");
+		pr_info("Enable detect IRQ\n");
 		hi->hpin_irq_type = irq_type;
 		set_irq_type(hi->pdata.hpin_irq, hi->hpin_irq_type);
 		enable_irq(hi->pdata.hpin_irq);
 	}
 
 	if (hi->pdata.key_gpio) {
-		HS_LOG("Setup button IRQ type");
+		pr_info("Setup button IRQ type\n");
 		hi->key_irq_type = irq_type;
 		set_irq_type(hi->pdata.key_irq, hi->key_irq_type);
 	}
@@ -305,10 +305,10 @@ static void hs_pmic_key_int_enable(int enable)
 {
 	if (enable) {
 		enable_irq(hi->pdata.key_irq);
-		HS_LOG("Enable remote key irq");
+		pr_info("Enable remote key irq\n");
 	} else {
 		disable_irq(hi->pdata.key_irq);
-		HS_LOG("Disable remote key irq");
+		pr_info("Disable remote key irq\n");
 	}
 }
 
@@ -433,7 +433,7 @@ int register_attributes(void)
 
 err_create_pmic_device_file:
 	device_unregister(hi->pmic_dev);
-	HS_ERR("Failed to register pmic attribute file");
+	pr_info("Failed to register pmic attribute file\n");
 	return ret;
 }
 static int htc_headset_pmic_probe(struct platform_device *pdev)
@@ -444,7 +444,7 @@ static int htc_headset_pmic_probe(struct platform_device *pdev)
 	uint32_t vers = 0;
 #endif
 
-	HS_LOG("++++++++++++++++++++");
+	pr_info("++++++++++++++++++++\n");
 
 	hi = kzalloc(sizeof(struct htc_35mm_pmic_info), GFP_KERNEL);
 	if (!hi)
@@ -488,19 +488,19 @@ static int htc_headset_pmic_probe(struct platform_device *pdev)
 	hi->hpin_debounce = HS_JIFFIES_ZERO;
 	hi->key_irq_type = IRQF_TRIGGER_NONE;
 
-	wake_lock_init(&hi->hs_wake_lock, WAKE_LOCK_SUSPEND, DRIVER_NAME);
+	wake_lock_init(&hi->hs_wake_lock, WAKE_LOCK_SUSPEND, "hs_pmic");
 
 	detect_wq = create_workqueue("HS_PMIC_DETECT");
 	if (detect_wq  == NULL) {
 		ret = -ENOMEM;
-		HS_ERR("Failed to create detect workqueue");
+		pr_info("Failed to create detect workqueue\n");
 		goto err_create_detect_work_queue;
 	}
 
 	button_wq = create_workqueue("HS_PMIC_BUTTON");
 	if (button_wq == NULL) {
 		ret = -ENOMEM;
-		HS_ERR("Failed to create button workqueue");
+		pr_info("Failed to create button workqueue\n");
 		goto err_create_button_work_queue;
 	}
 
@@ -509,7 +509,7 @@ static int htc_headset_pmic_probe(struct platform_device *pdev)
 				&hi->pdata.hpin_irq, detect_irq_handler,
 				hi->hpin_irq_type, "HS_PMIC_DETECT", 1);
 		if (ret < 0) {
-			HS_ERR("Failed to request PMIC HPIN IRQ (0x%X)", ret);
+			pr_info("Failed to request PMIC HPIN IRQ (0x%X)\n", ret);
 			goto err_request_detect_irq;
 		}
 		disable_irq(hi->pdata.hpin_irq);
@@ -520,7 +520,7 @@ static int htc_headset_pmic_probe(struct platform_device *pdev)
 				&hi->pdata.key_irq, button_irq_handler,
 				hi->key_irq_type, "HS_PMIC_BUTTON", 1);
 		if (ret < 0) {
-			HS_ERR("Failed to request PMIC button IRQ (0x%X)", ret);
+			pr_info("Failed to request PMIC button IRQ (0x%X)\n", ret);
 			goto err_request_button_irq;
 		}
 		disable_irq(hi->pdata.key_irq);
@@ -533,9 +533,9 @@ static int htc_headset_pmic_probe(struct platform_device *pdev)
 					       HS_RPC_CLIENT_VERS, 0);
 		if (IS_ERR(endpoint_adc)) {
 			hi->pdata.driver_flag &= ~DRIVER_HS_PMIC_RPC_KEY;
-			HS_LOG("Failed to register ADC RPC client");
+			pr_info("Failed to register ADC RPC client\n");
 		} else
-			HS_LOG("Register ADC RPC client successfully");
+			pr_info("Register ADC RPC client successfully\n");
 	}
 
 	if (hi->pdata.driver_flag & DRIVER_HS_PMIC_DYNAMIC_THRESHOLD) {
@@ -561,10 +561,10 @@ static int htc_headset_pmic_probe(struct platform_device *pdev)
 		if (IS_ERR(endpoint_current)) {
 			hi->pdata.driver_flag &=
 				~DRIVER_HS_PMIC_DYNAMIC_THRESHOLD;
-			HS_LOG("Failed to register threshold RPC client");
+			pr_info("Failed to register threshold RPC client\n");
 		} else
-			HS_LOG("Register threshold RPC client successfully"
-			       " (0x%X)", vers);
+			pr_info("Register threshold RPC client successfully"
+			       " (0x%X)\n", vers);
 	}
 #else
 	hi->pdata.driver_flag &= ~DRIVER_HS_PMIC_RPC_KEY;
@@ -574,9 +574,9 @@ static int htc_headset_pmic_probe(struct platform_device *pdev)
 	queue_delayed_work(detect_wq, &irq_init_work, HS_JIFFIES_IRQ_INIT);
 
 	hs_pmic_register();
-	hs_notify_driver_ready(DRIVER_NAME);
+	hs_notify_driver_ready("hs_pmic");
 
-	HS_LOG("--------------------");
+	pr_info("--------------------\n");
 
 	return 0;
 
@@ -596,7 +596,7 @@ err_create_detect_work_queue:
 	wake_lock_destroy(&hi->hs_wake_lock);
 	kfree(hi);
 
-	HS_ERR("Failed to register %s driver", DRIVER_NAME);
+	pr_info("Failed to register driver\n");
 
 	return ret;
 }

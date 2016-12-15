@@ -17,6 +17,8 @@
  *
  */
 
+#define pr_fmt(fmt) "hs_microp: " fmt
+
 #include <linux/gpio.h>
 #include <linux/platform_device.h>
 #include <linux/rtc.h>
@@ -27,8 +29,6 @@
 
 #include <mach/htc_headset_mgr.h>
 #include <mach/htc_headset_microp.h>
-
-#define DRIVER_NAME "HS_MICROP"
 
 static struct htc_headset_microp_info *hi;
 
@@ -113,12 +113,12 @@ static int headset_microp_remote_adc(int *adc)
 	data[1] = hi->pdata.adc_channel;
 	ret = microp_read_adc(data);
 	if (ret != 0) {
-		HS_ERR("Failed to read Micro-P ADC");
+		pr_info("Failed to read Micro-P ADC\n");
 		return 0;
 	}
 
 	*adc = data[0] << 8 | data[1];
-	HS_LOG("Remote ADC %d (0x%X)", *adc, *adc);
+	pr_info("Remote ADC %d (0x%X)\n", *adc, *adc);
 
 	return 1;
 }
@@ -132,7 +132,7 @@ static int headset_microp_mic_status(void)
 
 	ret = headset_microp_remote_adc(&adc);
 	if (!ret) {
-		HS_ERR("Failed to read Micro-P remote ADC");
+		pr_info("Failed to read Micro-P remote ADC\n");
 		return HEADSET_NO_MIC;
 	}
 
@@ -168,7 +168,7 @@ static void button_microp_work_func(struct work_struct *work)
 	memset(data, 0x00, sizeof(data));
 	ret = microp_i2c_read(MICROP_I2C_RCMD_REMOTE_KEYCODE, data, 2);
 	if (ret != 0) {
-		HS_ERR("Failed to read Micro-P remote key code");
+		pr_info("Failed to read Micro-P remote key code\n");
 		return;
 	}
 
@@ -179,7 +179,7 @@ static void button_microp_work_func(struct work_struct *work)
 	else
 		keycode = (int) data[1];
 
-	HS_LOG("Key code %d", keycode);
+	pr_info("Key code %d\n", keycode);
 
 	hs_notify_key_event(keycode);
 }
@@ -247,13 +247,13 @@ static int htc_headset_microp_probe(struct platform_device *pdev)
 
 	struct htc_headset_microp_platform_data *pdata = NULL;
 
-	HS_LOG("++++++++++++++++++++");
+	pr_info("++++++++++++++++++++\n");
 
 	pdata = pdev->dev.platform_data;
 
 	hi = kzalloc(sizeof(struct htc_headset_microp_info), GFP_KERNEL);
 	if (!hi) {
-		HS_ERR("Failed to allocate memory for headset info");
+		pr_info("Failed to allocate memory for headset info\n");
 		return -ENOMEM;
 	}
 
@@ -278,7 +278,7 @@ static int htc_headset_microp_probe(struct platform_device *pdev)
 
 	hi->hpin_debounce = HS_JIFFIES_ZERO;
 
-	wake_lock_init(&hi->hs_wake_lock, WAKE_LOCK_SUSPEND, DRIVER_NAME);
+	wake_lock_init(&hi->hs_wake_lock, WAKE_LOCK_SUSPEND, "hs_microp");
 
 	if (hi->pdata.hpin_int) {
 		hi->hpin_gpio_mask = pdata->hpin_mask[0] << 16 |
@@ -289,21 +289,21 @@ static int htc_headset_microp_probe(struct platform_device *pdev)
 	detect_wq = create_workqueue("detect");
 	if (detect_wq == NULL) {
 		ret = -ENOMEM;
-		HS_ERR("Failed to create detect workqueue");
+		pr_info("Failed to create detect workqueue\n");
 		goto err_create_detect_work_queue;
 	}
 
 	button_wq = create_workqueue("button");
 	if (button_wq == NULL) {
 		ret = -ENOMEM;
-		HS_ERR("Failed to create button workqueue");
+		pr_info("Failed to create button workqueue\n");
 		goto err_create_button_work_queue;
 	}
 
 	if (hi->pdata.hpin_int) {
 		ret = headset_microp_enable_interrupt(hi->pdata.hpin_int, 1);
 		if (ret != 0) {
-			HS_ERR("Failed to enable Micro-P HPIN interrupt");
+			pr_info("Failed to enable Micro-P HPIN interrupt\n");
 			goto err_enable_microp_hpin_interrupt;
 		}
 	}
@@ -314,7 +314,7 @@ static int htc_headset_microp_probe(struct platform_device *pdev)
 				  IRQF_TRIGGER_NONE, "HS_MICROP_DETECT", NULL);
 		if (ret < 0) {
 			ret = -EINVAL;
-			HS_ERR("Failed to request Micro-P HPIN IRQ (ERR %d)",
+			pr_info("Failed to request Micro-P HPIN IRQ (ERR %d)\n",
 				ret);
 			goto err_request_microp_detect_irq;
 		}
@@ -332,7 +332,7 @@ static int htc_headset_microp_probe(struct platform_device *pdev)
 
 		if (ret != 0) {
 			ret = -EIO;
-			HS_ERR("Failed to write Micro-P ADC table");
+			pr_info("Failed to write Micro-P ADC table\n");
 			goto err_write_microp_adc_table;
 		}
 	}
@@ -340,7 +340,7 @@ static int htc_headset_microp_probe(struct platform_device *pdev)
 	if (hi->pdata.remote_int) {
 		ret = headset_microp_enable_interrupt(hi->pdata.remote_int, 0);
 		if (ret != 0) {
-			HS_ERR("Failed to disable Micro-P remote interrupt");
+			pr_info("Failed to disable Micro-P remote interrupt\n");
 			goto err_disable_microp_remote_interrupt;
 		}
 	}
@@ -351,7 +351,7 @@ static int htc_headset_microp_probe(struct platform_device *pdev)
 				  IRQF_TRIGGER_NONE, "HS_MICROP_BUTTON", NULL);
 		if (ret < 0) {
 			ret = -EINVAL;
-			HS_ERR("Failed to request Micro-P button IRQ (%d) (ERR %d)",
+			pr_info("Failed to request Micro-P button IRQ (%d) (ERR %d)\n",
 			       hi->pdata.remote_irq, ret);
 			goto err_request_microp_button_irq;
 		}
@@ -361,13 +361,13 @@ static int htc_headset_microp_probe(struct platform_device *pdev)
 	}
 
 	hs_microp_register();
-	hs_notify_driver_ready(DRIVER_NAME);
+	hs_notify_driver_ready("hs_microp");
 
 	if (hi->pdata.hpin_int)
 		queue_delayed_work(detect_wq, &detect_microp_work,
 				   hi->hpin_debounce);
 
-	HS_LOG("--------------------");
+	pr_info("--------------------\n");
 
 	return 0;
 
@@ -399,7 +399,7 @@ err_create_detect_work_queue:
 	wake_lock_destroy(&hi->hs_wake_lock);
 	kfree(hi);
 
-	HS_ERR("Failed to register %s driver", DRIVER_NAME);
+	pr_info("Failed to register driver\n");
 
 	return ret;
 }

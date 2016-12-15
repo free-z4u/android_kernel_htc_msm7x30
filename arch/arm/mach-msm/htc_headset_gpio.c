@@ -17,6 +17,8 @@
  *
  */
 
+#define pr_fmt(fmt) "hs_gpio: " fmt
+
 #include <linux/gpio.h>
 #include <linux/irq.h>
 #include <linux/rtc.h>
@@ -26,8 +28,6 @@
 
 #include <mach/htc_headset_mgr.h>
 #include <mach/htc_headset_gpio.h>
-
-#define DRIVER_NAME "HS_GPIO"
 
 static struct workqueue_struct *detect_wq;
 static void detect_gpio_work_func(struct work_struct *work);
@@ -135,13 +135,13 @@ static void irq_init_work_func(struct work_struct *work)
 	HS_DBG();
 
 	if (hi->pdata.hpin_gpio) {
-		HS_LOG("Enable detect IRQ");
+		pr_info("Enable detect IRQ\n");
 		set_irq_type(hi->hpin_irq, IRQF_TRIGGER_LOW);
 		enable_irq(hi->hpin_irq);
 	}
 
 	if (hi->pdata.key_gpio) {
-		HS_LOG("Enable button IRQ");
+		pr_info("Enable button IRQ\n");
 		hi->key_irq_type = IRQF_TRIGGER_LOW;
 		set_irq_type(hi->key_irq, hi->key_irq_type);
 		enable_irq(hi->key_irq);
@@ -219,11 +219,11 @@ static int htc_headset_gpio_probe(struct platform_device *pdev)
 	int ret;
 	struct htc_headset_gpio_platform_data *pdata = pdev->dev.platform_data;
 
-	HS_LOG("++++++++++++++++++++");
+	pr_info("++++++++++++++++++++\n");
 
 	hi = kzalloc(sizeof(struct htc_headset_gpio_info), GFP_KERNEL);
 	if (!hi) {
-		HS_ERR("Failed to allocate memory for headset info");
+		pr_info("Failed to allocate memory for headset info\n");
 		return -ENOMEM;
 	}
 
@@ -242,25 +242,25 @@ static int htc_headset_gpio_probe(struct platform_device *pdev)
 	detect_wq = create_workqueue("HS_GPIO_DETECT");
 	if (detect_wq == NULL) {
 		ret = -ENOMEM;
-		HS_ERR("Failed to create detect workqueue");
+		pr_info("Failed to create detect workqueue\n");
 		goto err_create_detect_work_queue;
 	}
 
 	button_wq = create_workqueue("HS_GPIO_BUTTON");
 	if (button_wq == NULL) {
 		ret = -ENOMEM;
-		HS_ERR("Failed to create button workqueue");
+		pr_info("Failed to create button workqueue\n");
 		goto err_create_button_work_queue;
 	}
 
-	wake_lock_init(&hi->hs_wake_lock, WAKE_LOCK_SUSPEND, DRIVER_NAME);
+	wake_lock_init(&hi->hs_wake_lock, WAKE_LOCK_SUSPEND, "hs_gpio");
 
 	if (hi->pdata.hpin_gpio) {
 		ret = hs_gpio_request_irq(hi->pdata.hpin_gpio,
 				&hi->hpin_irq, detect_irq_handler,
 				IRQF_TRIGGER_NONE, "HS_GPIO_DETECT", 1);
 		if (ret < 0) {
-			HS_ERR("Failed to request GPIO HPIN IRQ (0x%X)", ret);
+			pr_info("Failed to request GPIO HPIN IRQ (0x%X)\n", ret);
 			goto err_request_detect_irq;
 		}
 		disable_irq(hi->hpin_irq);
@@ -271,7 +271,7 @@ static int htc_headset_gpio_probe(struct platform_device *pdev)
 				&hi->key_irq, button_irq_handler,
 				hi->key_irq_type, "HS_GPIO_BUTTON", 1);
 		if (ret < 0) {
-			HS_ERR("Failed to request GPIO button IRQ (0x%X)", ret);
+			pr_info("Failed to request GPIO button IRQ (0x%X)\n", ret);
 			goto err_request_button_irq;
 		}
 		disable_irq(hi->key_irq);
@@ -280,9 +280,9 @@ static int htc_headset_gpio_probe(struct platform_device *pdev)
 	queue_delayed_work(detect_wq, &irq_init_work, HS_JIFFIES_IRQ_INIT);
 
 	hs_gpio_register();
-	hs_notify_driver_ready(DRIVER_NAME);
+	hs_notify_driver_ready("hs_gpio");
 
-	HS_LOG("--------------------");
+	pr_info("--------------------\n");
 
 	return 0;
 
@@ -302,7 +302,7 @@ err_create_button_work_queue:
 err_create_detect_work_queue:
 	kfree(hi);
 
-	HS_ERR("Failed to register %s driver", DRIVER_NAME);
+	pr_info("Failed to register driver\n");
 
 	return ret;
 }
