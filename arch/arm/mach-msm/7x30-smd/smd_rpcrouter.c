@@ -15,7 +15,7 @@
  *
  */
 
-#define pr_fmt(fmt) "SMD: " fmt
+#define pr_fmt(fmt) "SMD rpcrouter: " fmt
 
 /* TODO: handle cases where smd_write() will tempfail due to full fifo */
 /* TODO: thread priority? schedule a work to bump it? */
@@ -78,7 +78,7 @@ if (smd_rpcrouter_debug_mask & RTR_DBG) \
 
 #define RR(x...) do { \
 if (smd_rpcrouter_debug_mask & R2R_MSG) \
-	printk(KERN_DEBUG "[K][RR] "x); \
+	pr_debug("[RR] "x); \
 } while (0)
 
 #define RAW(x...) do { \
@@ -250,8 +250,7 @@ static int rpcrouter_send_control_msg(struct rpcrouter_xprt_info *xprt_info,
 
 	if (!(msg->cmd == RPCROUTER_CTRL_CMD_HELLO) &&
 	    !xprt_info->initialized) {
-		printk(KERN_ERR "[K] rpcrouter_send_control_msg(): Warning, "
-		       "router not initialized\n");
+		pr_err("%s: Warning, router not initialized\n", __func__);
 		return -EINVAL;
 	}
 
@@ -448,7 +447,7 @@ static void rpcrouter_register_board_dev(struct rr_server *server)
 			list_del(&board_info->list);
 			rc = platform_device_register(&board_info->dev->pdev);
 			if (rc)
-				pr_err("[K] %s: board dev register failed %d\n",
+				pr_err("%s: board dev register failed %d\n",
 				       __func__, rc);
 			kfree(board_info);
 			break;
@@ -555,19 +554,19 @@ int msm_rpcrouter_destroy_local_endpoint(struct msm_rpc_endpoint *ept)
 	** router port. So don't send a REMOVE CLIENT message while
 	** destroying it.*/
 	if (ept->dst_pid != 0xffffffff) {
-	msg.cmd = RPCROUTER_CTRL_CMD_REMOVE_CLIENT;
-	msg.cli.pid = ept->pid;
-	msg.cli.cid = ept->cid;
+		msg.cmd = RPCROUTER_CTRL_CMD_REMOVE_CLIENT;
+		msg.cli.pid = ept->pid;
+		msg.cli.cid = ept->cid;
 
-	RR("x REMOVE_CLIENT id=%d:%08x\n", ept->pid, ept->cid);
+		RR("x REMOVE_CLIENT id=%d:%08x\n", ept->pid, ept->cid);
 		mutex_lock(&xprt_info_list_lock);
-	list_for_each_entry(xprt_info, &xprt_info_list, list) {
-		rc = rpcrouter_send_control_msg(xprt_info, &msg);
-		if (rc < 0) {
+		list_for_each_entry(xprt_info, &xprt_info_list, list) {
+			rc = rpcrouter_send_control_msg(xprt_info, &msg);
+			if (rc < 0) {
 				mutex_unlock(&xprt_info_list_lock);
-			return rc;
+				return rc;
+			}
 		}
-	}
 		mutex_unlock(&xprt_info_list_lock);
 	}
 
@@ -662,7 +661,7 @@ static void handle_server_restart(struct rr_server *server,
 		r_ept->quota_restart_state =
 		RESTART_NORMAL;
 		spin_unlock_irqrestore(&r_ept->quota_lock, flags);
-		printk(KERN_INFO "[K] rpcrouter: Remote EP %0x Reset\n",
+		pr_info("Remote EP %0x Reset\n",
 			   (unsigned int)r_ept);
 		wake_up(&r_ept->quota_wait);
 	}
@@ -694,7 +693,7 @@ static int process_control_msg(struct rpcrouter_xprt_info *xprt_info,
 	static int first = 1;
 
 	if (len != sizeof(*msg)) {
-		printk(KERN_ERR "[K] rpcrouter: r2r msg size %d != %d\n",
+		pr_err("r2r msg size %d != %d\n",
 		       len, sizeof(*msg));
 		return -EINVAL;
 	}
@@ -705,7 +704,7 @@ static int process_control_msg(struct rpcrouter_xprt_info *xprt_info,
 
 		/* HTC add this to avoid the duplicate RPCROUTER_CTRL_CMD_HELLO issue */
 		if (xprt_info->initialized) {
-			pr_warning("[K] Warning! Receive RPCROUTER_CTRL_CMD_HELLO twice! (Remote_PID=0x%x)\n\n\n", xprt_info->remote_pid);
+			pr_warning("Warning! Receive RPCROUTER_CTRL_CMD_HELLO twice! (Remote_PID=0x%x)\n\n\n", xprt_info->remote_pid);
 			break;
 		}
 		/*--------------------------------------------------------------*/
@@ -749,12 +748,12 @@ static int process_control_msg(struct rpcrouter_xprt_info *xprt_info,
 
 		do {
 			if (r_ept)
-				pr_info("[K] %s: Oops - Wrong r_ept %p\n",
+				pr_info("%s: Oops - Wrong r_ept %p\n",
 					__func__, r_ept);
 		r_ept = rpcrouter_lookup_remote_endpoint(msg->cli.pid,
 							 msg->cli.cid);
 		if (!r_ept) {
-				printk(KERN_ERR "[K] rpcrouter: Unable to resume"
+				pr_err("Unable to resume"
 						" client\n");
 				return rc;
 		}
@@ -765,7 +764,7 @@ static int process_control_msg(struct rpcrouter_xprt_info *xprt_info,
 
 		if (r_ept->tx_quota_cntr < RPCROUTER_DEFAULT_RX_QUOTA) {
 			struct rr_remote_endpoint *ept;
-			printk(KERN_ERR "[K] rpcrouter: Try to resume a non-blocked tx queue!(id=%d:%08x, cntr=%d, r_ept=%p)\n", r_ept->pid, r_ept->cid, r_ept->tx_quota_cntr, r_ept);
+			pr_err("Try to resume a non-blocked tx queue!(id=%d:%08x, cntr=%d, r_ept=%p)\n", r_ept->pid, r_ept->cid, r_ept->tx_quota_cntr, r_ept);
 			list_for_each_entry(ept, &remote_endpoints, list) {
 				D("%s: DUMP REPT  id=%d:%08x, tx_quota_cntr: %i, quota_restart_state: %i\n",
 					__func__, ept->pid, ept->cid, ept->tx_quota_cntr, ept->quota_restart_state);
@@ -781,7 +780,7 @@ static int process_control_msg(struct rpcrouter_xprt_info *xprt_info,
 #if 0	/* Marked by Andy for HTC battery driver */
 		if (msg->srv.vers == 0) {
 			pr_err(
-			"[K] rpcrouter: Server create rejected, version = 0, "
+			"Server create rejected, version = 0, "
 			"program = %08x\n", msg->srv.prog);
 			break;
 		}
@@ -807,9 +806,7 @@ static int process_control_msg(struct rpcrouter_xprt_info *xprt_info,
 				rc = rpcrouter_create_remote_endpoint(
 					msg->srv.pid, msg->srv.cid);
 				if (rc < 0)
-					printk(KERN_ERR
-						"[K] rpcrouter:Client create"
-						"error (%d)\n", rc);
+					pr_err("Client create error (%d)\n", rc);
 			}
 			rpcrouter_register_board_dev(server);
 			schedule_work(&work_create_pdevs);
@@ -840,8 +837,8 @@ static int process_control_msg(struct rpcrouter_xprt_info *xprt_info,
 	case RPCROUTER_CTRL_CMD_REMOVE_CLIENT:
 		RR("o REMOVE_CLIENT id=%d:%08x\n", msg->cli.pid, msg->cli.cid);
 		if (msg->cli.pid == RPCROUTER_PID_LOCAL) {
-			printk(KERN_ERR
-			       "[K] rpcrouter: Denying remote removal of "
+			pr_err(
+			       "Denying remote removal of "
 			       "local client\n");
 			break;
 		}
@@ -855,7 +852,7 @@ static int process_control_msg(struct rpcrouter_xprt_info *xprt_info,
 		}
 
 		/* Notify local clients of this event */
-		printk(KERN_ERR "[K] rpcrouter: LOCAL NOTIFICATION NOT IMP\n");
+		pr_err("LOCAL NOTIFICATION NOT IMP\n");
 		rc = -ENOSYS;
 
 		break;
@@ -905,7 +902,7 @@ static void *rr_malloc(unsigned sz)
 	if (ptr)
 		return ptr;
 
-	printk(KERN_ERR "[K] rpcrouter: kzalloc of %d failed, retrying...\n", sz);
+	pr_err("kzalloc of %d failed, retrying...\n", sz);
 	do {
 		ptr = kzalloc(sz, GFP_KERNEL);
 	} while (!ptr);
@@ -1144,7 +1141,7 @@ done:
 
 fail_io:
 fail_data:
-	printk(KERN_ERR "[K] rpc_router has died\n");
+	pr_err("rpc_router has died\n");
 }
 
 void msm_rpc_setup_req(struct rpc_request_hdr *hdr, uint32_t prog,
@@ -1425,8 +1422,7 @@ static struct msm_rpc_reply *get_avail_reply(struct msm_rpc_endpoint *ept)
 	unsigned long flags;
 	if (list_empty(&ept->reply_avail_q)) {
 		if (ept->reply_cnt >= RPCROUTER_PEND_REPLIES_MAX) {
-			printk(KERN_ERR
-			       "[K] exceeding max replies of %d \n",
+			pr_err("exceeding max replies of %d \n",
 			       RPCROUTER_PEND_REPLIES_MAX);
 			return 0;
 		}
@@ -1478,8 +1474,7 @@ int msm_rpc_write(struct msm_rpc_endpoint *ept, void *buffer, int count)
 		((rq->prog&0xFFFFFFF0) == RMT_STORAGE_SRV_APIPROG_BE32) ||
 		(be32_to_cpu(rq->prog) == BATT_A2M_PROG) ||
 		(be32_to_cpu(rq->prog) == BATT_M2A_PROG)) {
-		printk(KERN_DEBUG
-			"[K] %s: prog = 0x%X, procedure = %d, type = %d, xid = %d\n",
+		pr_debug("%s: prog = 0x%X, procedure = %d, type = %d, xid = %d\n",
 			__func__, be32_to_cpu(rq->prog), be32_to_cpu(rq->procedure)
 			, be32_to_cpu(rq->type), be32_to_cpu(rq->xid));
 	}
@@ -1488,26 +1483,24 @@ int msm_rpc_write(struct msm_rpc_endpoint *ept, void *buffer, int count)
 
 	/* has to have at least the xid and type fields */
 	if (count < (sizeof(uint32_t) * 2)) {
-		printk(KERN_ERR "[K] rr_write: rejecting runt packet\n");
+		pr_err("rr_write: rejecting runt packet\n");
 		return -EINVAL;
 	}
 
 	if (rq->type == 0) {
 		/* RPC CALL */
 		if (count < (sizeof(uint32_t) * 6)) {
-			printk(KERN_ERR
-			       "[K] rr_write: rejecting runt call packet\n");
+			pr_err("rr_write: rejecting runt call packet\n");
 			return -EINVAL;
 		}
 		if (ept->dst_pid == 0xffffffff) {
-			printk(KERN_ERR "[K] rr_write: not connected\n");
+			pr_err("rr_write: not connected\n");
 			return -ENOTCONN;
 		}
 		if ((ept->dst_prog != rq->prog) ||
 		    ((be32_to_cpu(ept->dst_vers) & 0x0fff0000) !=
 		     (be32_to_cpu(rq->vers) & 0x0fff0000))) {
-			printk(KERN_ERR
-			       "[K] rr_write: cannot write to %08x:%08x "
+			pr_err("rr_write: cannot write to %08x:%08x "
 			       "(bound to %08x:%08x)\n",
 			       be32_to_cpu(rq->prog), be32_to_cpu(rq->vers),
 			       be32_to_cpu(ept->dst_prog),
@@ -1523,8 +1516,7 @@ int msm_rpc_write(struct msm_rpc_endpoint *ept, void *buffer, int count)
 		/* RPC REPLY */
 		reply = get_pend_reply(ept, rq->xid);
 		if (!reply) {
-			printk(KERN_ERR
-			       "[K] rr_write: rejecting, reply not found \n");
+			pr_err("rr_write: rejecting, reply not found \n");
 			return -EINVAL;
 		}
 		hdr.dst_pid = reply->pid;
@@ -1536,8 +1528,7 @@ int msm_rpc_write(struct msm_rpc_endpoint *ept, void *buffer, int count)
 	r_ept = rpcrouter_lookup_remote_endpoint(hdr.dst_pid, hdr.dst_cid);
 
 	if ((!r_ept) && (hdr.dst_pid != RPCROUTER_PID_LOCAL)) {
-		printk(KERN_ERR
-			"[K] msm_rpc_write(): No route to ept "
+		pr_err("rr_write: No route to ept "
 			"[PID %x CID %x]\n", hdr.dst_pid, hdr.dst_cid);
 		count = -EHOSTUNREACH;
 		goto write_release_lock;
@@ -1819,8 +1810,7 @@ int __msm_rpc_read(struct msm_rpc_endpoint *ept,
 		((rq->prog&0xFFFFFFF0) == RMT_STORAGE_SRV_APIPROG_BE32) ||
 		(be32_to_cpu(rq->prog) == BATT_A2M_PROG) ||
 		(be32_to_cpu(rq->prog) == BATT_M2A_PROG)) {
-		printk(KERN_DEBUG
-			"[K] %s: prog = 0x%X, procedure = %d, type = %d, xid = %d\n",
+		pr_debug("%s: prog = 0x%X, procedure = %d, type = %d, xid = %d\n",
 			__func__, be32_to_cpu(rq->prog), be32_to_cpu(rq->procedure)
 			, be32_to_cpu(rq->type), be32_to_cpu(rq->xid));
 	}
@@ -1929,7 +1919,7 @@ static struct msm_rpc_endpoint *__msm_rpc_connect(uint32_t prog, uint32_t vers,
 			break;
 
 		if (found_prog) {
-			pr_info("[K] %s: server not found %x:%x\n",
+			pr_info("%s: server not found %x:%x\n",
 				__func__, prog, vers);
 			rc = -EHOSTUNREACH;
 			break;
