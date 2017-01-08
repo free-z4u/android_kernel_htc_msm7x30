@@ -1114,6 +1114,8 @@ EXPORT_SYMBOL(smd_close);
 
 int smd_read(smd_channel_t *ch, void *data, int len)
 {
+	pr_info("%s, from %s len: %d",
+		__func__, ch->name?ch->name:"N/A", len);
 	return ch->read(ch, data, len);
 }
 EXPORT_SYMBOL(smd_read);

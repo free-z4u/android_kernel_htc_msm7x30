@@ -1932,6 +1932,7 @@ int htc_battery_update_change(void)
 static int htc_battery_probe(struct platform_device *pdev)
 {
 	struct htc_battery_platform_data *pdata = pdev->dev.platform_data;
+	pr_info("%s\n", __func__);
 
 	htc_batt_info.device_id = pdev->id;
 	htc_batt_info.gpio_usb_id = pdata->gpio_usb_id;

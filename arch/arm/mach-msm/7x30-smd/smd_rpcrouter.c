@@ -796,6 +796,13 @@ static int process_control_msg(struct rpcrouter_xprt_info *xprt_info,
 				msg->srv.prog, msg->srv.vers);
 			if (!server)
 				return -ENOMEM;
+			if (0x30100001 == msg->srv.prog) {
+				pr_info("pid:%.8x, cid:%.8x, server:%.8x:%.8x from %s\n",
+					msg->srv.pid, msg->srv.cid,
+					msg->srv.prog, msg->srv.vers,
+					xprt_info->xprt->name?xprt_info->xprt->name:"N/A");
+				__WARN();
+			};
 			/*
 			 * XXX: Verify that its okay to add the
 			 * client to our remote client list
@@ -2319,8 +2326,10 @@ void msm_rpcrouter_xprt_notify(struct rpcrouter_xprt *xprt, unsigned event)
 	if (event == RPCROUTER_XPRT_EVENT_OPEN)
 		msm_rpcrouter_add_xprt(xprt);
 
-	if (!xprt_info)
+	if (!xprt_info) {
+		pr_info("no xprt_info\n");
 		return;
+	}
 
 	/* Check read_avail even for OPEN event to handle missed
 	   DATA events while processing the OPEN event*/

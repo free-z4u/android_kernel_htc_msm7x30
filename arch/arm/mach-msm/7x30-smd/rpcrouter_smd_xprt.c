@@ -43,6 +43,7 @@ static int rpcrouter_smd_remote_read_avail(void)
 
 static int rpcrouter_smd_remote_read(void *data, uint32_t len)
 {
+	pr_info("%s: len: %d\n", __func__, len);
 	return smd_read(smd_remote_xprt.channel, data, len);
 }
 
